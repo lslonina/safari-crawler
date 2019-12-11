@@ -4,58 +4,58 @@ package org.lslonina.books.safaricrawler.model.details;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.springframework.data.annotation.Id;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "url",
-        "natural_key",
-        "authors",
-        "subjects",
-        "topics",
-        "publishers",
-        "chapters",
-        "cover",
-        "chapter_list",
-        "toc",
-        "flat_toc",
-        "web_url",
-        "last_chapter_read",
-        "academic_excluded",
-        "opf_unique_identifier_type",
-        "has_mathml",
-        "created_time",
-        "last_modified_time",
-        "identifier",
-        "name",
-        "title",
-        "format",
-        "content_format",
-        "source",
-        "orderable_title",
-        "has_stylesheets",
-        "description",
-        "isbn",
-        "issued",
-        "language",
-        "rights",
-        "updated",
-        "orderable_author",
-        "purchase_link",
-        "publisher_resource_links",
-        "is_free",
-        "is_system_book",
-        "is_active",
-        "is_hidden",
-        "virtual_pages",
-        "duration_seconds",
-        "pagecount"
+    "url",
+    "natural_key",
+    "authors",
+    "subjects",
+    "topics",
+    "publishers",
+    "chapters",
+    "cover",
+    "chapter_list",
+    "toc",
+    "flat_toc",
+    "web_url",
+    "last_chapter_read",
+    "academic_excluded",
+    "opf_unique_identifier_type",
+    "has_mathml",
+    "created_time",
+    "last_modified_time",
+    "identifier",
+    "name",
+    "title",
+    "format",
+    "content_format",
+    "source",
+    "orderable_title",
+    "has_stylesheets",
+    "description",
+    "isbn",
+    "issued",
+    "language",
+    "rights",
+    "updated",
+    "orderable_author",
+    "purchase_link",
+    "publisher_resource_links",
+    "is_free",
+    "is_system_book",
+    "is_active",
+    "is_hidden",
+    "virtual_pages",
+    "duration_seconds",
+    "pagecount"
 })
 public class BookDetails {
 
@@ -64,13 +64,13 @@ public class BookDetails {
     @JsonProperty("natural_key")
     private List<String> naturalKey = null;
     @JsonProperty("authors")
-    private List<String> authors = null;
+    private List<Author> authors = null;
     @JsonProperty("subjects")
     private List<Object> subjects = null;
     @JsonProperty("topics")
-    private List<String> topics = null;
+    private List<Topic> topics = null;
     @JsonProperty("publishers")
-    private List<String> publishers = null;
+    private List<Publisher> publishers = null;
     @JsonProperty("chapters")
     private List<String> chapters = null;
     @JsonProperty("cover")
@@ -95,6 +95,8 @@ public class BookDetails {
     private String createdTime;
     @JsonProperty("last_modified_time")
     private String lastModifiedTime;
+
+    @Id
     @JsonProperty("identifier")
     private String identifier;
     @JsonProperty("name")
@@ -126,9 +128,9 @@ public class BookDetails {
     @JsonProperty("orderable_author")
     private String orderableAuthor;
     @JsonProperty("purchase_link")
-    private String purchaseLink;
+    private Object purchaseLink;
     @JsonProperty("publisher_resource_links")
-    private String publisherResourceLinks;
+    private PublisherResourceLinks publisherResourceLinks;
     @JsonProperty("is_free")
     private Boolean isFree;
     @JsonProperty("is_system_book")
@@ -167,12 +169,12 @@ public class BookDetails {
     }
 
     @JsonProperty("authors")
-    public List<String> getAuthors() {
+    public List<Author> getAuthors() {
         return authors;
     }
 
     @JsonProperty("authors")
-    public void setAuthors(List<String> authors) {
+    public void setAuthors(List<Author> authors) {
         this.authors = authors;
     }
 
@@ -187,22 +189,22 @@ public class BookDetails {
     }
 
     @JsonProperty("topics")
-    public List<String> getTopics() {
+    public List<Topic> getTopics() {
         return topics;
     }
 
     @JsonProperty("topics")
-    public void setTopics(List<String> topics) {
+    public void setTopics(List<Topic> topics) {
         this.topics = topics;
     }
 
     @JsonProperty("publishers")
-    public List<String> getPublishers() {
+    public List<Publisher> getPublishers() {
         return publishers;
     }
 
     @JsonProperty("publishers")
-    public void setPublishers(List<String> publishers) {
+    public void setPublishers(List<Publisher> publishers) {
         this.publishers = publishers;
     }
 
@@ -477,22 +479,22 @@ public class BookDetails {
     }
 
     @JsonProperty("purchase_link")
-    public String getPurchaseLink() {
+    public Object getPurchaseLink() {
         return purchaseLink;
     }
 
     @JsonProperty("purchase_link")
-    public void setPurchaseLink(String purchaseLink) {
+    public void setPurchaseLink(Object purchaseLink) {
         this.purchaseLink = purchaseLink;
     }
 
     @JsonProperty("publisher_resource_links")
-    public String getPublisherResourceLinks() {
+    public PublisherResourceLinks getPublisherResourceLinks() {
         return publisherResourceLinks;
     }
 
     @JsonProperty("publisher_resource_links")
-    public void setPublisherResourceLinks(String publisherResourceLinks) {
+    public void setPublisherResourceLinks(PublisherResourceLinks publisherResourceLinks) {
         this.publisherResourceLinks = publisherResourceLinks;
     }
 
