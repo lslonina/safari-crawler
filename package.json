@@ -1,0 +1,24 @@
+{
+  "name": "spring-react-app",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "Sample application using React with Spring Boot",
+  "dependencies": {
+    "@babel/core": "^7.7.5",
+    "@babel/preset-env": "^7.7.6",
+    "@babel/preset-react": "^7.7.4",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "babel-loader": "^8.0.6",
+    "bootstrap": "^4.4.1",
+    "css-loader": "^3.3.2",
+    "jquery": "^3.4.1",
+    "style-loader": "^1.0.1",
+    "react": "~16.12.0",
+    "react-cookie": "^4.0.1",
+    "react-router-dom": "^5.1.2",
+    "react-dom": "~16.12.0",
+    "reactstrap": "^8.2.0",
+    "webpack-cli": "^3.3.10",
+    "webpack": "^4.41.2"
+  }
+}

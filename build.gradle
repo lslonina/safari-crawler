@@ -1,12 +1,16 @@
 plugins {
-    id 'org.springframework.boot' version '2.2.1.RELEASE'
+    id 'org.springframework.boot' version '2.2.2.RELEASE'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
     id 'java'
+    id "com.moowork.node" version "1.3.1"
 }
 
 group = 'org.lslonina.books'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
+
+apply plugin: 'io.spring.dependency-management'
+apply plugin: "com.moowork.node"
 
 repositories {
     mavenCentral()
@@ -27,6 +31,24 @@ test {
     useJUnitPlatform()
 }
 
+bootRun {
+    // support passing -Dsystem.property=value to bootRun task
+    systemProperties = System.properties
+}
+
 wrapper {
 
 }
+
+task buildReactApp(type: NodeTask, dependsOn: 'npmInstall') {
+    script = project.file('node_modules/.bin/webpack')
+    args = [
+            '--mode', 'development',
+            '--entry', './src/main/webapp/javascript/index.js',
+            '-o', './src/main/resources/static/dist/react-app.js'
+    ]
+}
+
+processResources.dependsOn 'buildReactApp'
+clean.delete << file('node_modules')
+clean.delete << file('src/main/resources/static/dist')
