@@ -1,5 +1,5 @@
 
-package org.lslonina.books.safaricrawler.model;
+package org.lslonina.books.safaricrawler.model.generic;
 
 import java.util.HashMap;
 import java.util.List;

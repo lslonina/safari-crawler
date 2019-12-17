@@ -1,18 +1,17 @@
 package org.lslonina.books.safaricrawler.crawler;
 
-import org.lslonina.books.safaricrawler.model.Book;
-import org.lslonina.books.safaricrawler.model.QueryResult;
+import org.lslonina.books.safaricrawler.model.cover.BookCover;
+import org.lslonina.books.safaricrawler.model.generic.Book;
+import org.lslonina.books.safaricrawler.model.generic.QueryResult;
 import org.lslonina.books.safaricrawler.model.details.BookDetails;
+import org.lslonina.books.safaricrawler.repository.BookCoverRepository;
 import org.lslonina.books.safaricrawler.repository.BookDetailsRepository;
 import org.lslonina.books.safaricrawler.repository.BooksRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toSet;
@@ -24,28 +23,33 @@ public class Crawler {
     public static final String ADDRESS = BASE + "?sort=publication_date&query=*&limit=36&include_case_studies=true&include_courses=true&include_orioles=true&include_playlists=true&include_collections=true&collection_type=expert&collection_sharing=public&collection_sharing=enterprise&exclude_fields=description&page=1&formats=book";
 
     private final RestTemplate restTemplate;
-    private final BooksRepository booksRepository;
-    private BookDetailsRepository bookDetailsRepository;
 
-    public Crawler(RestTemplate restTemplate, BooksRepository booksRepository, BookDetailsRepository bookDetailsRepository) {
+    private final BooksRepository booksRepository;
+    private final BookDetailsRepository bookDetailsRepository;
+    private final BookCoverRepository bookCoverRepository;
+
+    public Crawler(RestTemplate restTemplate, BooksRepository booksRepository, BookDetailsRepository bookDetailsRepository, BookCoverRepository bookCoverRepository) {
         this.restTemplate = restTemplate;
         this.booksRepository = booksRepository;
         this.bookDetailsRepository = bookDetailsRepository;
+        this.bookCoverRepository = bookCoverRepository;
     }
 
     public void loadData() {
         log.info("Fetching: " + ADDRESS);
-        QueryResult queryResult = restTemplate.getForObject(ADDRESS, QueryResult.class);
-        log.info("Fetched: " + queryResult.getBooks().size());
-        booksRepository.saveAll(queryResult.getBooks());
+        List<Book> books = restTemplate.getForObject(ADDRESS, QueryResult.class).getBooks();
+        log.info("Fetched: " + books.size());
+        List<BookCover> covers = getBookCovers(books);
+        booksRepository.saveAll(books);
+        bookCoverRepository.saveAll(covers);
 
         List<Book> searchResult = booksRepository.findAll();
 
-        Map<String, Set<Book>> books = searchResult.stream().collect(Collectors.groupingBy(book -> getKey(book), toSet()));
+        Map<String, Set<Book>> booksByPublishers = searchResult.stream().collect(Collectors.groupingBy(book -> getKey(book), toSet()));
 
         List<BookDetails> bookDetailsCollection = new ArrayList<>(searchResult.size());
 
-        for (Map.Entry<String, Set<Book>> bookEntrySet : books.entrySet()) {
+        for (Map.Entry<String, Set<Book>> bookEntrySet : booksByPublishers.entrySet()) {
             System.out.println(bookEntrySet.getKey());
             for (Book book : bookEntrySet.getValue()) {
                 BookDetails bookDetails = restTemplate.getForObject(book.getUrl(), BookDetails.class);
@@ -56,6 +60,19 @@ public class Crawler {
             }
         }
         bookDetailsRepository.saveAll(bookDetailsCollection);
+    }
+
+    private List<BookCover> getBookCovers(List<Book> books) {
+        List<BookCover> covers = new ArrayList<>(books.size());
+        books.forEach(book -> {
+            byte[] imageBytes = restTemplate.getForObject(book.getCoverUrl(), byte[].class);
+            String imageAsString = Base64.getEncoder().encodeToString(imageBytes);
+            if (imageAsString.isBlank()) {
+                log.warn("Can't fetch cover for: " + book.getTitle());
+            }
+            covers.add(new BookCover(book.getIsbn(), imageAsString));
+        });
+        return covers;
     }
 
     private String getKey(Book book) {

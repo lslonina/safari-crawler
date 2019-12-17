@@ -13,8 +13,8 @@ class App extends Component {
                 <Router>
                     <Switch>
                         <Route path='/' exact={true} component={Home}/>
-                        {/*<Route path='/groups' exact={true} component={GroupList}/>*/}
-                        {/*<Route path='/groups/:id' component={GroupEdit}/>*/}
+                        <Route path='/books' exact={true} component={GroupList}/>
+                        <Route path='/books/:id' component={GroupEdit}/>
                     </Switch>
                 </Router>
             </CookiesProvider>

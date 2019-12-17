@@ -1,6 +1,7 @@
 package org.lslonina.books.safaricrawler;
 
 import org.lslonina.books.safaricrawler.crawler.Crawler;
+import org.lslonina.books.safaricrawler.repository.BookCoverRepository;
 import org.lslonina.books.safaricrawler.repository.BookDetailsRepository;
 import org.lslonina.books.safaricrawler.repository.BooksRepository;
 import org.slf4j.Logger;
@@ -47,8 +48,8 @@ public class SafariCrawlerApplication {
     }
 
     @Bean
-    public Crawler crawler(RestTemplate restTemplate, BooksRepository booksRepository, BookDetailsRepository bookDetailsRepository) {
-        return new Crawler(restTemplate, booksRepository, bookDetailsRepository);
+    public Crawler crawler(RestTemplate restTemplate, BooksRepository booksRepository, BookDetailsRepository bookDetailsRepository, BookCoverRepository bookCoverRepository) {
+        return new Crawler(restTemplate, booksRepository, bookDetailsRepository, bookCoverRepository);
     }
 
     private static String readCookies() throws IOException {
