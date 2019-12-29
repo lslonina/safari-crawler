@@ -11,5 +11,9 @@ public interface BooksRepository extends MongoRepository<Book, String> {
 
     Optional <Book> findByIsbn(String isbn);
 
-    List<Book> findAllByPriorityNot(int priority);
+    List<Book> findAllByPriorityEquals(int priority);
+
+    List<Book> findAllByPriorityLessThan(int priority);
+
+    List<Book> findAllByPriorityGreaterThan(int priority);
 }

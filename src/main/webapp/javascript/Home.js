@@ -10,7 +10,10 @@ class Home extends Component {
             <div>
                 <AppNavbar/>
                 <Container fluid>
-                    <Button color="link"><Link to="/books">Browse books</Link></Button>
+                    <Button color="link"><Link to="/books?filter=unprocessed">Unprocessed books</Link></Button>
+                    <Button color="link"><Link to="/books?filter=selected">Selected books</Link></Button>
+                    <Button color="link"><Link to="/books?filter=skipped">Skipped books</Link></Button>
+                    <Button color="link"><Link to="/books?filter=all">All books</Link></Button>
                 </Container>
             </div>
         );

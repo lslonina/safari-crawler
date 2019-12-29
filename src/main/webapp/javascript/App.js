@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import '../css/App.css';
 import Home from './Home';
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
-import GroupList from './GroupList';
+import GroupList from './BookList';
 import GroupEdit from './GroupEdit';
 import {CookiesProvider} from 'react-cookie';
 
@@ -14,7 +14,7 @@ class App extends Component {
                     <Switch>
                         <Route path='/' exact={true} component={Home}/>
                         <Route path='/books' exact={true} component={GroupList}/>
-                        <Route path='/books/:isbn' component={GroupEdit}/>
+                        <Route path='/book/:isbn' component={GroupEdit}/>
                     </Switch>
                 </Router>
             </CookiesProvider>

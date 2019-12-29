@@ -1,11 +1,12 @@
 import React, {Component} from 'react';
 import {Button, ButtonGroup, Container, Table} from 'reactstrap';
-import AppNavbar from './AppNavbar';
 import {Link, withRouter} from 'react-router-dom';
 import {instanceOf} from 'prop-types';
 import {withCookies, Cookies} from 'react-cookie';
+import queryString from 'query-string'
+import Home from "./Home";
 
-class GroupList extends Component {
+class BookList extends Component {
     static propTypes = {
         cookies: instanceOf(Cookies).isRequired
     };
@@ -18,9 +19,14 @@ class GroupList extends Component {
     }
 
     componentDidMount() {
+        let query = this.props.location.search;
+        const parsedQuery = queryString.parse(query);
+        console.log('parsedQuery', parsedQuery)
+        const filter = parsedQuery.filter;
+
         this.setState({isLoading: true});
 
-        fetch('api/books', {credentials: 'include'})
+        fetch('api/books' + query, {credentials: 'include'})
             .then(response => response.json())
             .then(data => this.setState({groups: data, isLoading: false}))
             .catch(() => this.props.history.push('/'));
@@ -54,6 +60,7 @@ class GroupList extends Component {
                 <td style={{whiteSpace: 'nowrap'}}>{book.title}</td>
                 <td>{address}</td>
                 <td><img src={`/api/books/${book.isbn}/cover`} alt="Cover"/></td>
+                <td>{book.priority}</td>
                 {/*<td>{book.events.map(event => {*/}
                 {/*    return <div key={event.id}>{new Intl.DateTimeFormat('en-US', {*/}
                 {/*        year: 'numeric',*/}
@@ -63,7 +70,7 @@ class GroupList extends Component {
                 {/*})}</td>*/}
                 <td>
                     <ButtonGroup>
-                        <Button size="sm" color="primary" tag={Link} to={"/books/" + book.isbn}>Edit</Button>
+                        <Button size="sm" color="primary" tag={Link} to={"/book/" + book.isbn}>Edit</Button>
                         <Button size="sm" color="danger" onClick={() => this.skip(book.isbn)}>Delete</Button>
                     </ButtonGroup>
                 </td>
@@ -72,18 +79,19 @@ class GroupList extends Component {
 
         return (
             <div>
-                <AppNavbar/>
+                <Home/>
                 <Container fluid>
                     <div className="float-right">
-                        <Button color="success" tag={Link} to="/books/new">Add Group</Button>
+                        <Button color="success" tag={Link} to="/books/new">Add Book</Button>
                     </div>
-                    <h3>My JUG Tour</h3>
+                    <h3>My Library</h3>
                     <Table className="mt-4">
                         <thead>
                         <tr>
                             <th width="20%">Name</th>
-                            <th width="20%">Location</th>
-                            <th>Events</th>
+                            <th width="20%">Id</th>
+                            <th>Cover</th>
+                            <th width="10%">Priority</th>
                             <th width="10%">Actions</th>
                         </tr>
                         </thead>
@@ -97,4 +105,4 @@ class GroupList extends Component {
     }
 }
 
-export default withCookies(withRouter(GroupList));
+export default withCookies(withRouter(BookList));

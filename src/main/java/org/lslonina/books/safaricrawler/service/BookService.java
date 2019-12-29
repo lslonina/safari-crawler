@@ -33,8 +33,20 @@ public class BookService {
     }
 
     @GetMapping("/books")
-    public List<Book> allNotSkipped() {
-        return booksRepository.findAllByPriorityNot(-1);
+    public List<Book> bookList(@RequestParam String filter) {
+        if (filter.equals("all")) {
+            return booksRepository.findAll();
+        }
+        if (filter.equals("skipped")) {
+            return booksRepository.findAllByPriorityLessThan(0);
+        }
+        if (filter.equals("selected")) {
+            return booksRepository.findAllByPriorityGreaterThan(0);
+        }
+        if (filter.equals("unprocessed")) {
+            return booksRepository.findAllByPriorityEquals(0);
+        }
+        throw new RuntimeException("Query param not supported: " + filter);
     }
 
     @GetMapping("/books/{isbn}")
