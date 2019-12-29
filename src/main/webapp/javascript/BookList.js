@@ -14,7 +14,7 @@ class BookList extends Component {
     constructor(props) {
         super(props);
         const {cookies} = props;
-        this.state = {groups: [], csrfToken: cookies.get('XSRF-TOKEN'), isLoading: true};
+        this.state = {books: [], csrfToken: cookies.get('XSRF-TOKEN'), isLoading: true};
         this.skip = this.skip.bind(this);
     }
 
@@ -28,7 +28,7 @@ class BookList extends Component {
 
         fetch('api/books' + query, {credentials: 'include'})
             .then(response => response.json())
-            .then(data => this.setState({groups: data, isLoading: false}))
+            .then(data => this.setState({books: data, isLoading: false}))
             .catch(() => this.props.history.push('/'));
     }
 
@@ -42,24 +42,24 @@ class BookList extends Component {
             },
             credentials: 'include'
         }).then(() => {
-            let updatedGroups = [...this.state.groups].filter(i => i.isbn !== id);
+            let updatedGroups = [...this.state.books].filter(i => i.identifier !== id);
             this.setState({groups: updatedGroups});
         });
     }
 
     render() {
-        const {groups, isLoading} = this.state;
+        const {books, isLoading} = this.state;
 
         if (isLoading) {
             return <p>Loading...</p>;
         }
 
-        const groupList = groups.map(book => {
-            const address = `${book.title || ''} ${book.id || ''} ${book.isbn || ''}`;
-            return <tr key={book.id}>
+        const groupList = books.map(book => {
+            const identifier = `${book.identifier || ''}`;
+            return <tr key={book.identifier}>
                 <td style={{whiteSpace: 'nowrap'}}>{book.title}</td>
-                <td>{address}</td>
-                <td><img src={`/api/books/${book.isbn}/cover`} alt="Cover"/></td>
+                <td>{identifier}</td>
+                <td><img src={`/api/books/${book.identifier}/cover`} alt="Cover"/></td>
                 <td>{book.priority}</td>
                 {/*<td>{book.events.map(event => {*/}
                 {/*    return <div key={event.id}>{new Intl.DateTimeFormat('en-US', {*/}
@@ -70,8 +70,8 @@ class BookList extends Component {
                 {/*})}</td>*/}
                 <td>
                     <ButtonGroup>
-                        <Button size="sm" color="primary" tag={Link} to={"/book/" + book.isbn}>Edit</Button>
-                        <Button size="sm" color="danger" onClick={() => this.skip(book.isbn)}>Delete</Button>
+                        <Button size="sm" color="primary" tag={Link} to={"/book/" + book.identifier}>Edit</Button>
+                        <Button size="sm" color="danger" onClick={() => this.skip(book.identifier)}>Delete</Button>
                     </ButtonGroup>
                 </td>
             </tr>

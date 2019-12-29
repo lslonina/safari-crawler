@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class QueryResult {
 
     @JsonProperty("results")
-    private List<Book> books = null;
+    private List<SafariBook> safariBooks = null;
     @JsonProperty("facets")
     private Facets facets;
     @JsonProperty("total")
@@ -42,13 +42,13 @@ public class QueryResult {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("results")
-    public List<Book> getBooks() {
-        return books;
+    public List<SafariBook> getSafariBooks() {
+        return safariBooks;
     }
 
     @JsonProperty("results")
-    public void setBooks(List<Book> books) {
-        this.books = books;
+    public void setSafariBooks(List<SafariBook> safariBooks) {
+        this.safariBooks = safariBooks;
     }
 
     @JsonProperty("facets")

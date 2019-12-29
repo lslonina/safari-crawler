@@ -1,12 +1,8 @@
 package org.lslonina.books.safaricrawler.service;
 
 
-import org.lslonina.books.safaricrawler.model.cover.BookCover;
-import org.lslonina.books.safaricrawler.model.details.BookDetails;
-import org.lslonina.books.safaricrawler.model.generic.Book;
-import org.lslonina.books.safaricrawler.repository.BookCoverRepository;
-import org.lslonina.books.safaricrawler.repository.BookDetailsRepository;
-import org.lslonina.books.safaricrawler.repository.BooksRepository;
+import org.lslonina.books.safaricrawler.dto.Book;
+import org.lslonina.books.safaricrawler.repository.BookRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -22,62 +18,58 @@ import java.util.Optional;
 public class BookService {
     private static final Logger log = LoggerFactory.getLogger(BookService.class);
 
-    private final BooksRepository booksRepository;
-    private final BookDetailsRepository bookDetailsRepository;
-    private final BookCoverRepository bookCoverRepository;
+    private final BookRepository bookRepository;
 
-    public BookService(BooksRepository booksRepository, BookDetailsRepository bookDetailsRepository, BookCoverRepository bookCoverRepository) {
-        this.booksRepository = booksRepository;
-        this.bookDetailsRepository = bookDetailsRepository;
-        this.bookCoverRepository = bookCoverRepository;
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
     }
 
     @GetMapping("/books")
     public List<Book> bookList(@RequestParam String filter) {
+        List<Book> result;
         if (filter.equals("all")) {
-            return booksRepository.findAll();
+            result = bookRepository.findAll();
+        } else if (filter.equals("skipped")) {
+            result = bookRepository.findAllByPriorityLessThan(0);
+        } else if (filter.equals("selected")) {
+            result = bookRepository.findAllByPriorityGreaterThan(0);
+        } else if (filter.equals("unprocessed")) {
+            result = bookRepository.findAllByPriorityEquals(0);
+        } else {
+            throw new RuntimeException("Query param not supported: " + filter);
         }
-        if (filter.equals("skipped")) {
-            return booksRepository.findAllByPriorityLessThan(0);
-        }
-        if (filter.equals("selected")) {
-            return booksRepository.findAllByPriorityGreaterThan(0);
-        }
-        if (filter.equals("unprocessed")) {
-            return booksRepository.findAllByPriorityEquals(0);
-        }
-        throw new RuntimeException("Query param not supported: " + filter);
+        return result;
     }
 
-    @GetMapping("/books/{isbn}")
-    public BookDetails one(@PathVariable String isbn) {
-        log.info("Getting details for: " + isbn);
-        if (!isbn.equals("undefined")) {
-            return bookDetailsRepository.findByIsbn(isbn).orElseThrow(() -> new BookNotFoundException(isbn));
+    @GetMapping("/books/{id}")
+    public Book one(@PathVariable String id) {
+        log.info("Getting details for: " + id);
+        if (!id.equals("undefined")) {
+            return bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(id));
         }
         return null;
     }
 
-    @PostMapping("/books/{isbn}/skip")
-    public void skip(@PathVariable String isbn) {
-        log.info("Skipping: " + isbn);
-        if (!isbn.equals("undefined")) {
-            Optional<Book> book = booksRepository.findByIsbn(isbn);
+    @PostMapping("/books/{id}/skip")
+    public void skip(@PathVariable String id) {
+        log.info("Skipping: " + id);
+        if (!id.equals("undefined")) {
+            Optional<Book> book = bookRepository.findById(id);
             if (book.isPresent()) {
                 Book bookResult = book.get();
                 bookResult.setPriority(-1);
-                booksRepository.save(bookResult);
-                log.info("Skipped: " + isbn);
+                bookRepository.save(bookResult);
+                log.info("Skipped: " + id);
             }
         }
     }
 
-    @GetMapping(value = "/books/{isbn}/cover")
-    public ResponseEntity<byte[]> getImage(@PathVariable("isbn") String isbn) {
-        log.info("Getting cover for: " + isbn);
-        if (!isbn.equals("undefined")) {
-            BookCover bookCover = bookCoverRepository.findById(isbn).orElseThrow(() -> new BookNotFoundException(isbn));
-            String cover = bookCover.getCover();
+    @GetMapping(value = "/books/{id}/cover")
+    public ResponseEntity<byte[]> getImage(@PathVariable("id") String id) {
+        log.info("Getting cover for: " + id);
+        if (!id.equals("undefined")) {
+            Book book = bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(id));
+            String cover = book.getCover();
             byte[] image = Base64.getDecoder().decode(cover);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
         }

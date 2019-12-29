@@ -47,9 +47,8 @@ import org.springframework.data.annotation.Id;
         "topics",
         "topics_payload"
 })
-public class Book {
+public class SafariBook {
 
-    @Id
     @JsonProperty("id")
     private String id;
     @JsonProperty("authors")
@@ -60,8 +59,11 @@ public class Book {
     private String format;
     @JsonProperty("content_format")
     private String contentFormat;
+
+    @Id
     @JsonProperty("archive_id")
     private String archiveId;
+
     @JsonProperty("isbn")
     private String isbn;
     @JsonProperty("issued")

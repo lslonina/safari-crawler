@@ -1,9 +1,9 @@
 package org.lslonina.books.safaricrawler;
 
 import org.lslonina.books.safaricrawler.crawler.Crawler;
-import org.lslonina.books.safaricrawler.repository.BookCoverRepository;
-import org.lslonina.books.safaricrawler.repository.BookDetailsRepository;
-import org.lslonina.books.safaricrawler.repository.BooksRepository;
+import org.lslonina.books.safaricrawler.repository.BookRepository;
+import org.lslonina.books.safaricrawler.repository.SafariBookDetailsRepository;
+import org.lslonina.books.safaricrawler.repository.SafariBooksRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,8 +47,8 @@ public class SafariCrawlerApplication {
     }
 
     @Bean
-    public Crawler crawler(RestTemplate restTemplate, BooksRepository booksRepository, BookDetailsRepository bookDetailsRepository, BookCoverRepository bookCoverRepository) {
-        return new Crawler(restTemplate, booksRepository, bookDetailsRepository, bookCoverRepository);
+    public Crawler crawler(RestTemplate restTemplate, SafariBooksRepository safariBooksRepository, SafariBookDetailsRepository safariBookDetailsRepository, BookRepository bookRepository) {
+        return new Crawler(restTemplate, safariBooksRepository, safariBookDetailsRepository, bookRepository);
     }
 
     private static String readCookies() throws IOException {
@@ -65,10 +65,12 @@ public class SafariCrawlerApplication {
     }
 
     @Bean
-    public CommandLineRunner run(RestTemplate restTemplate, BooksRepository booksRepository, Crawler crawler) throws Exception {
+    public CommandLineRunner run(RestTemplate restTemplate, SafariBooksRepository safariBooksRepository, SafariBookDetailsRepository bookDetailsRepository, BookRepository bookRepository, Crawler crawler) throws Exception {
         return args -> {
-//            booksRepository.deleteAll();
-//            crawler.loadData();
+            bookDetailsRepository.deleteAll();
+            bookRepository.deleteAll();
+            safariBooksRepository.deleteAll();
+            crawler.loadData();
         };
     }
 }

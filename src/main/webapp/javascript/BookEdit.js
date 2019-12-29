@@ -7,15 +7,18 @@ import AppNavbar from './AppNavbar';
 import {instanceOf} from 'prop-types';
 import {Cookies, withCookies} from 'react-cookie';
 
-class GroupEdit extends Component {
+class BookEdit extends Component {
     static propTypes = {
         cookies: instanceOf(Cookies).isRequired
     };
 
     emptyItem = {
+        identifier: '',
         title: '',
-        isbn: '',
-        id: ''
+        authors: [''],
+        description: '',
+        pages: '',
+        priority: ''
     };
 
     constructor(props) {
@@ -30,11 +33,11 @@ class GroupEdit extends Component {
     }
 
     async componentDidMount() {
-        let isbn = this.props.match.params.isbn;
-        if (isbn !== 'new') {
+        let id = this.props.match.params.id;
+        if (id !== 'new') {
             try {
-                const group = await (await fetch(`/api/books/${isbn}`, {credentials: 'include'})).json();
-                this.setState({item: group});
+                const book = await (await fetch(`/api/books/${id}`, {credentials: 'include'})).json();
+                this.setState({item: book});
             } catch (error) {
                 this.props.history.push('/');
             }
@@ -83,7 +86,7 @@ class GroupEdit extends Component {
                     </FormGroup>
                     <FormGroup>
                         <Label for="address">Address</Label>
-                        <Input type="text" name="address" id="address" value={item.isbn || ''}
+                        <Input type="text" name="address" id="address" value={item.archive_id || ''}
                                onChange={this.handleChange} autoComplete="address-level1"/>
                     </FormGroup>
                     <FormGroup>
@@ -119,4 +122,4 @@ class GroupEdit extends Component {
     }
 }
 
-export default withCookies(withRouter(GroupEdit));
+export default withCookies(withRouter(BookEdit));
