@@ -115,6 +115,9 @@ public class Book {
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
+    @JsonProperty("priority")
+    private int priority;
+
     @JsonProperty("id")
     public String getId() {
         return id;
@@ -471,5 +474,13 @@ public class Book {
                 ", topicsPayload=" + topicsPayload +
                 ", additionalProperties=" + additionalProperties +
                 '}';
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public int getPriority() {
+        return priority;
     }
 }

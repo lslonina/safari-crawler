@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 
 @SpringBootApplication
 public class SafariCrawlerApplication {
-
     private static final Logger log = LoggerFactory.getLogger(SafariCrawlerApplication.class);
 
     public static void main(String[] args) {

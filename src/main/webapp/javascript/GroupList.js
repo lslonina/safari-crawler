@@ -14,7 +14,7 @@ class GroupList extends Component {
         super(props);
         const {cookies} = props;
         this.state = {groups: [], csrfToken: cookies.get('XSRF-TOKEN'), isLoading: true};
-        this.remove = this.remove.bind(this);
+        this.skip = this.skip.bind(this);
     }
 
     componentDidMount() {
@@ -26,9 +26,9 @@ class GroupList extends Component {
             .catch(() => this.props.history.push('/'));
     }
 
-    async remove(id) {
-        await fetch(`/api/books/${id}`, {
-            method: 'DELETE',
+    async skip(id) {
+        await fetch(`/api/books/${id}/skip`, {
+            method: 'POST',
             headers: {
                 'X-XSRF-TOKEN': this.state.csrfToken,
                 'Accept': 'application/json',
@@ -36,7 +36,7 @@ class GroupList extends Component {
             },
             credentials: 'include'
         }).then(() => {
-            let updatedGroups = [...this.state.groups].filter(i => i.id !== id);
+            let updatedGroups = [...this.state.groups].filter(i => i.isbn !== id);
             this.setState({groups: updatedGroups});
         });
     }
@@ -64,7 +64,7 @@ class GroupList extends Component {
                 <td>
                     <ButtonGroup>
                         <Button size="sm" color="primary" tag={Link} to={"/books/" + book.isbn}>Edit</Button>
-                        <Button size="sm" color="danger" onClick={() => this.remove(book.id)}>Delete</Button>
+                        <Button size="sm" color="danger" onClick={() => this.skip(book.isbn)}>Delete</Button>
                     </ButtonGroup>
                 </td>
             </tr>

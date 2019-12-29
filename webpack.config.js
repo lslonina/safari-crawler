@@ -1,4 +1,8 @@
 module.exports = {
+    entry: [
+        'regenerator-runtime/runtime',
+        './src/main/webapp/javascript/index.js'
+    ],
     devtool: 'source-map',
     module: {
         rules: [{

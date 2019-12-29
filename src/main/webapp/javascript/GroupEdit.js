@@ -1,3 +1,5 @@
+import "regenerator-runtime/runtime";
+import "core-js/stable";
 import React, {Component} from 'react';
 import {Link, withRouter} from 'react-router-dom';
 import {Button, Container, Form, FormGroup, Input, Label} from 'reactstrap';
@@ -28,9 +30,10 @@ class GroupEdit extends Component {
     }
 
     async componentDidMount() {
-        if (this.props.match.params.id !== 'new') {
+        let isbn = this.props.match.params.isbn;
+        if (isbn !== 'new') {
             try {
-                const group = await (await fetch(`/api/books/${this.props.match.params.id}`, {credentials: 'include'})).json();
+                const group = await (await fetch(`/api/books/${isbn}`, {credentials: 'include'})).json();
                 this.setState({item: group});
             } catch (error) {
                 this.props.history.push('/');

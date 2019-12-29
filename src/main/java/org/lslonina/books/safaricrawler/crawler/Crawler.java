@@ -38,6 +38,7 @@ public class Crawler {
     public void loadData() {
         log.info("Fetching: " + ADDRESS);
         List<Book> books = restTemplate.getForObject(ADDRESS, QueryResult.class).getBooks();
+        books.forEach(b -> b.setPriority(0));
         log.info("Fetched: " + books.size());
         List<BookCover> covers = getBookCovers(books);
         booksRepository.saveAll(books);
