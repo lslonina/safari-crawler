@@ -12,7 +12,7 @@ public class Book {
     @JsonProperty("identifier")
     private String identifier;
 
-    @JsonProperty("author")
+    @JsonProperty("authors")
     private List<String> authors;
 
     @JsonProperty("title")

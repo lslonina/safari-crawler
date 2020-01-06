@@ -1,11 +1,12 @@
 import "regenerator-runtime/runtime";
 import "core-js/stable";
-import React, {Component} from 'react';
+import React, {Component, Fragment} from 'react';
 import {Link, withRouter} from 'react-router-dom';
 import {Button, Container, Form, FormGroup, Input, Label} from 'reactstrap';
 import AppNavbar from './AppNavbar';
 import {instanceOf} from 'prop-types';
 import {Cookies, withCookies} from 'react-cookie';
+import parse from 'html-react-parser';
 
 class BookEdit extends Component {
     static propTypes = {
@@ -58,7 +59,7 @@ class BookEdit extends Component {
         const {item, csrfToken} = this.state;
 
         await fetch('/api/books', {
-            method: (item.id) ? 'PUT' : 'POST',
+            method: (item.identifier) ? 'PUT' : 'POST',
             headers: {
                 'X-XSRF-TOKEN': this.state.csrfToken,
                 'Accept': 'application/json',
@@ -72,7 +73,8 @@ class BookEdit extends Component {
 
     render() {
         const {item} = this.state;
-        const title = <h2>{item.id ? 'Edit Book' : 'Add Book'}</h2>;
+        const desc = parse(item.description);
+        const title = <h2>{item.identifier ? 'Edit Book' : 'Add Book'}</h2>;
 
         return <div>
             <AppNavbar/>
@@ -80,20 +82,20 @@ class BookEdit extends Component {
                 {title}
                 <Form onSubmit={this.handleSubmit}>
                     <FormGroup>
-                        <Label for="name">Name</Label>
-                        <Input type="text" name="name" id="name" value={item.title || ''}
-                               onChange={this.handleChange} autoComplete="name"/>
+                        <Label for="name">Title</Label>
+                        <Input type="text" name="title" id="title" value={item.title || ''}
+                               onChange={this.handleChange} autoComplete="title"/>
                     </FormGroup>
                     <FormGroup>
-                        <Label for="address">Address</Label>
-                        <Input type="text" name="address" id="address" value={item.archive_id || ''}
-                               onChange={this.handleChange} autoComplete="address-level1"/>
+                        <Label for="authors">Authors</Label>
+                        <Input type="text" name="authors" id="authors" value={item.authors || ''}
+                               onChange={this.handleChange} autoComplete="authors"/>
                     </FormGroup>
-                    <FormGroup>
-                        <Label for="city">City</Label>
-                        <Input type="text" name="city" id="city" value={item.id || ''}
-                               onChange={this.handleChange} autoComplete="address-level1"/>
-                    </FormGroup>
+                    {/*<FormGroup>*/}
+                    {/*    <Label for="description">Description</Label>*/}
+                    {/*    <Input type="text" name="description" id="description" value={item.description || ''}*/}
+                    {/*           onChange={this.handleChange} autoComplete="address-level1"/>*/}
+                    {/*</FormGroup>*/}
                     {/*<div className="row">*/}
                     {/*    <FormGroup className="col-md-4 mb-3">*/}
                     {/*        <Label for="stateOrProvince">State/Province</Label>*/}
@@ -117,6 +119,9 @@ class BookEdit extends Component {
                         <Button color="secondary" tag={Link} to="/books">Cancel</Button>
                     </FormGroup>
                 </Form>
+                <Fragment>
+                    {desc}
+                </Fragment>
             </Container>
         </div>
     }

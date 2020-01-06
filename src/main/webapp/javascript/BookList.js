@@ -5,6 +5,7 @@ import {instanceOf} from 'prop-types';
 import {withCookies, Cookies} from 'react-cookie';
 import queryString from 'query-string'
 import Home from "./Home";
+import parse from 'html-react-parser';
 
 class BookList extends Component {
     static propTypes = {
@@ -55,10 +56,10 @@ class BookList extends Component {
         }
 
         const groupList = books.map(book => {
-            const identifier = `${book.identifier || ''}`;
+            const desc = parse(book.description);
             return <tr key={book.identifier}>
-                <td style={{whiteSpace: 'nowrap'}}>{book.title}</td>
-                <td style={{whiteSpace: 'pre-wrap'}}>{book.description}</td>
+                <td style={{whiteSpace: 'wrap'}}>{book.title}</td>
+                <td style={{whiteSpace: 'pre-wrap'}}>{desc}</td>
                 <td>{book.pages}</td>
                 <td><img src={`/api/books/${book.identifier}/cover`} alt="Cover"/></td>
                 <td>{book.priority}</td>
@@ -86,13 +87,13 @@ class BookList extends Component {
                         <Button color="success" tag={Link} to="/books/new">Add Book</Button>
                     </div>
                     <h3>My Library</h3>
-                    <Table className="mt-4">
+                    <Table className="mt-6">
                         <thead>
                         <tr>
                             <th width="20%">Title</th>
-                            <th width="20%">Description</th>
-                            <th width="20%">Pages</th>
-                            <th>Cover</th>
+                            <th width="50%">Description</th>
+                            <th width="5%">Pages</th>
+                            <th width="10%">Cover</th>
                             <th width="5%">Priority</th>
                             <th width="10%">Actions</th>
                         </tr>

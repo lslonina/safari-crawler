@@ -65,12 +65,16 @@ public class SafariCrawlerApplication {
     }
 
     @Bean
-    public CommandLineRunner run(RestTemplate restTemplate, SafariBookRepository safariBookRepository, SafariBookDetailsRepository bookDetailsRepository, BookRepository bookRepository, Crawler crawler) throws Exception {
+    public CommandLineRunner run(SafariBookRepository safariBookRepository, SafariBookDetailsRepository bookDetailsRepository, BookRepository bookRepository, Crawler crawler) throws Exception {
         return args -> {
-            bookDetailsRepository.deleteAll();
-            bookRepository.deleteAll();
-            safariBookRepository.deleteAll();
-            crawler.loadData();
+//            fetchData(safariBookRepository, bookDetailsRepository, bookRepository, crawler);
         };
+    }
+
+    private void fetchData(SafariBookRepository safariBookRepository, SafariBookDetailsRepository bookDetailsRepository, BookRepository bookRepository, Crawler crawler) {
+        bookDetailsRepository.deleteAll();
+        bookRepository.deleteAll();
+        safariBookRepository.deleteAll();
+        crawler.loadData();
     }
 }
