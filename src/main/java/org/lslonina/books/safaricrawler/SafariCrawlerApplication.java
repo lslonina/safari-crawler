@@ -3,7 +3,7 @@ package org.lslonina.books.safaricrawler;
 import org.lslonina.books.safaricrawler.crawler.Crawler;
 import org.lslonina.books.safaricrawler.repository.BookRepository;
 import org.lslonina.books.safaricrawler.repository.SafariBookDetailsRepository;
-import org.lslonina.books.safaricrawler.repository.SafariBooksRepository;
+import org.lslonina.books.safaricrawler.repository.SafariBookRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,8 +47,8 @@ public class SafariCrawlerApplication {
     }
 
     @Bean
-    public Crawler crawler(RestTemplate restTemplate, SafariBooksRepository safariBooksRepository, SafariBookDetailsRepository safariBookDetailsRepository, BookRepository bookRepository) {
-        return new Crawler(restTemplate, safariBooksRepository, safariBookDetailsRepository, bookRepository);
+    public Crawler crawler(RestTemplate restTemplate, SafariBookRepository safariBookRepository, SafariBookDetailsRepository safariBookDetailsRepository, BookRepository bookRepository) {
+        return new Crawler(restTemplate, safariBookRepository, safariBookDetailsRepository, bookRepository);
     }
 
     private static String readCookies() throws IOException {
@@ -65,11 +65,11 @@ public class SafariCrawlerApplication {
     }
 
     @Bean
-    public CommandLineRunner run(RestTemplate restTemplate, SafariBooksRepository safariBooksRepository, SafariBookDetailsRepository bookDetailsRepository, BookRepository bookRepository, Crawler crawler) throws Exception {
+    public CommandLineRunner run(RestTemplate restTemplate, SafariBookRepository safariBookRepository, SafariBookDetailsRepository bookDetailsRepository, BookRepository bookRepository, Crawler crawler) throws Exception {
         return args -> {
             bookDetailsRepository.deleteAll();
             bookRepository.deleteAll();
-            safariBooksRepository.deleteAll();
+            safariBookRepository.deleteAll();
             crawler.loadData();
         };
     }

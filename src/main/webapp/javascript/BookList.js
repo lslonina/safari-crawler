@@ -43,7 +43,7 @@ class BookList extends Component {
             credentials: 'include'
         }).then(() => {
             let updatedGroups = [...this.state.books].filter(i => i.identifier !== id);
-            this.setState({groups: updatedGroups});
+            this.setState({books: updatedGroups});
         });
     }
 
@@ -58,7 +58,8 @@ class BookList extends Component {
             const identifier = `${book.identifier || ''}`;
             return <tr key={book.identifier}>
                 <td style={{whiteSpace: 'nowrap'}}>{book.title}</td>
-                <td>{identifier}</td>
+                <td style={{whiteSpace: 'pre-wrap'}}>{book.description}</td>
+                <td>{book.pages}</td>
                 <td><img src={`/api/books/${book.identifier}/cover`} alt="Cover"/></td>
                 <td>{book.priority}</td>
                 {/*<td>{book.events.map(event => {*/}
@@ -88,10 +89,11 @@ class BookList extends Component {
                     <Table className="mt-4">
                         <thead>
                         <tr>
-                            <th width="20%">Name</th>
-                            <th width="20%">Id</th>
+                            <th width="20%">Title</th>
+                            <th width="20%">Description</th>
+                            <th width="20%">Pages</th>
                             <th>Cover</th>
-                            <th width="10%">Priority</th>
+                            <th width="5%">Priority</th>
                             <th width="10%">Actions</th>
                         </tr>
                         </thead>

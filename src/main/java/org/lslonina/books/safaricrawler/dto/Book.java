@@ -4,6 +4,7 @@ package org.lslonina.books.safaricrawler.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 
+import java.util.Date;
 import java.util.List;
 
 public class Book {
@@ -29,10 +30,16 @@ public class Book {
     @JsonProperty("priority")
     private int priority;
 
+    @JsonProperty("added")
+    private Date added;
+
+    @JsonProperty("published")
+    private Date published;
+
     public Book() {
     }
 
-    public Book(String identifier, String title, List<String> authors, String description, int pages, String cover, int priority) {
+    public Book(String identifier, String title, List<String> authors, String description, int pages, String cover, int priority, Date added, Date published) {
         this.identifier = identifier;
         this.title = title;
         this.authors = authors;
@@ -40,6 +47,8 @@ public class Book {
         this.pages = pages;
         this.cover = cover;
         this.priority = priority;
+        this.added = added;
+        this.published = published;
     }
 
     public String getIdentifier() {

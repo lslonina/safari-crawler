@@ -1,5 +1,6 @@
 package org.lslonina.books.safaricrawler.dto;
 
+import java.util.Date;
 import java.util.List;
 
 public class BookBuilder {
@@ -10,6 +11,8 @@ public class BookBuilder {
     private int pages;
     private String cover;
     private int priority;
+    private Date added;
+    private Date published;
 
     public BookBuilder(String identifier) {
         this.identifier = identifier;
@@ -45,7 +48,17 @@ public class BookBuilder {
         return this;
     }
 
+    public BookBuilder withAdded(Date added) {
+        this.added = added;
+        return this;
+    }
+
+    public BookBuilder withPublished(Date published) {
+        this.published = published;
+        return this;
+    }
+
     public Book build() {
-        return new Book(identifier, title, authors, description, pages, cover, priority);
+        return new Book(identifier, title, authors, description, pages, cover, priority, added, published);
     }
 }
