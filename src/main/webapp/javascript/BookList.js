@@ -6,6 +6,7 @@ import {withCookies, Cookies} from 'react-cookie';
 import queryString from 'query-string'
 import Home from "./Home";
 import parse from 'html-react-parser';
+import Moment from "react-moment";
 
 class BookList extends Component {
     static propTypes = {
@@ -33,8 +34,8 @@ class BookList extends Component {
             .catch(() => this.props.history.push('/'));
     }
 
-    async skip(id) {
-        await fetch(`/api/books/${id}/skip`, {
+    async skip(id, action) {
+        await fetch(`/api/books/${id}/${action}`, {
             method: 'POST',
             headers: {
                 'X-XSRF-TOKEN': this.state.csrfToken,
@@ -57,23 +58,21 @@ class BookList extends Component {
 
         const groupList = books.map(book => {
             const desc = parse(book.description);
+            const added = Date.parse(book.added)
+            const published = Date.parse(book.published)
             return <tr key={book.identifier}>
                 <td style={{whiteSpace: 'wrap'}}>{book.title}</td>
                 <td style={{whiteSpace: 'pre-wrap'}}>{desc}</td>
+                <td style={{whiteSpace: 'nowrap'}}><Moment format={"DD-MM-YYYY"}>{published}</Moment></td>
+                <td style={{whiteSpace: 'nowrap'}}><Moment format={"DD-MM-YYYY"}>{added}</Moment></td>
                 <td>{book.pages}</td>
                 <td><img src={`/api/books/${book.identifier}/cover`} alt="Cover"/></td>
                 <td>{book.priority}</td>
-                {/*<td>{book.events.map(event => {*/}
-                {/*    return <div key={event.id}>{new Intl.DateTimeFormat('en-US', {*/}
-                {/*        year: 'numeric',*/}
-                {/*        month: 'long',*/}
-                {/*        day: '2-digit'*/}
-                {/*    }).format(new Date(event.date))}: {event.title}</div>*/}
-                {/*})}</td>*/}
                 <td>
                     <ButtonGroup>
-                        <Button size="sm" color="primary" tag={Link} to={"/book/" + book.identifier}>Edit</Button>
-                        <Button size="sm" color="danger" onClick={() => this.skip(book.identifier)}>Delete</Button>
+                        <Button size="sm" color="primary" tag={Link} to={"/book/" + book.identifier}>Info</Button>
+                        <Button size="sm" color="success" onClick={() => this.mark(book.identifier, 'select')}>Select</Button>
+                        <Button size="sm" color="danger" onClick={() => this.mark(book.identifier, 'skip')}>Skip</Button>
                     </ButtonGroup>
                 </td>
             </tr>
@@ -92,8 +91,10 @@ class BookList extends Component {
                         <tr>
                             <th width="20%">Title</th>
                             <th width="50%">Description</th>
+                            <th width="2%">Published</th>
+                            <th width="2%">Added</th>
                             <th width="5%">Pages</th>
-                            <th width="10%">Cover</th>
+                            <th width="6%">Cover</th>
                             <th width="5%">Priority</th>
                             <th width="10%">Actions</th>
                         </tr>

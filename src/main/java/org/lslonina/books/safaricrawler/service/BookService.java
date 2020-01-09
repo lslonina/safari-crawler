@@ -5,6 +5,10 @@ import org.lslonina.books.safaricrawler.dto.Book;
 import org.lslonina.books.safaricrawler.repository.BookRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,19 +30,20 @@ public class BookService {
 
     @GetMapping("/books")
     public List<Book> bookList(@RequestParam String filter) {
-        List<Book> result;
+        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by("added").ascending());
+        Page<Book> result;
         if (filter.equals("all")) {
-            result = bookRepository.findAll();
+            result = bookRepository.findAll(pageRequest);
         } else if (filter.equals("skipped")) {
-            result = bookRepository.findAllByPriorityLessThan(0);
+            result = bookRepository.findAllByPriorityLessThan(0, pageRequest);
         } else if (filter.equals("selected")) {
-            result = bookRepository.findAllByPriorityGreaterThan(0);
+            result = bookRepository.findAllByPriorityGreaterThan(0, pageRequest);
         } else if (filter.equals("unprocessed")) {
-            result = bookRepository.findAllByPriorityEquals(0);
+            result = bookRepository.findAllByPriorityEquals(0, pageRequest);
         } else {
             throw new RuntimeException("Query param not supported: " + filter);
         }
-        return result;
+        return result.toList();
     }
 
     @GetMapping("/books/{id}")
