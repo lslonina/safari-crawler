@@ -17,10 +17,24 @@ class BookList extends Component {
         super(props);
         const {cookies} = props;
         this.state = {books: [], csrfToken: cookies.get('XSRF-TOKEN'), isLoading: true};
-        this.skip = this.skip.bind(this);
+        this.mark = this.mark.bind(this);
     }
 
     componentDidMount() {
+        console.log("Component did mount");
+        this.queryBooks();
+    }
+
+    componentDidUpdate(prevProps) {
+        console.log("Component did update");
+        let currentQuery = this.props.location.search;
+        let previousQuery = prevProps.location.search;
+        if (currentQuery !== previousQuery) {
+            this.queryBooks();
+        }
+    }
+
+    queryBooks() {
         let query = this.props.location.search;
         const parsedQuery = queryString.parse(query);
         console.log('parsedQuery', parsedQuery)
@@ -34,7 +48,7 @@ class BookList extends Component {
             .catch(() => this.props.history.push('/'));
     }
 
-    async skip(id, action) {
+    async mark(id, action) {
         await fetch(`/api/books/${id}/${action}`, {
             method: 'POST',
             headers: {
@@ -50,6 +64,7 @@ class BookList extends Component {
     }
 
     render() {
+        console.log("render method is called here");
         const {books, isLoading} = this.state;
 
         if (isLoading) {
@@ -71,8 +86,10 @@ class BookList extends Component {
                 <td>
                     <ButtonGroup>
                         <Button size="sm" color="primary" tag={Link} to={"/book/" + book.identifier}>Info</Button>
-                        <Button size="sm" color="success" onClick={() => this.mark(book.identifier, 'select')}>Select</Button>
-                        <Button size="sm" color="danger" onClick={() => this.mark(book.identifier, 'skip')}>Skip</Button>
+                        <Button size="sm" color="success"
+                                onClick={() => this.mark(book.identifier, 'select')}>Select</Button>
+                        <Button size="sm" color="danger"
+                                onClick={() => this.mark(book.identifier, 'skip')}>Skip</Button>
                     </ButtonGroup>
                 </td>
             </tr>
