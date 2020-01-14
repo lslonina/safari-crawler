@@ -27,10 +27,12 @@ public class BookApi {
     }
 
     @GetMapping("/books")
-    public List<Book> bookList(@RequestParam String filter) {
-        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by("added").ascending());
+    public List<Book> bookList(@RequestParam(required = false) String filter) {
+        PageRequest pageRequest = PageRequest.of(0, 20, Sort.by("published").descending());
         Page<Book> result;
-        if (filter.equals("all")) {
+        if (filter == null) {
+            return bookService.findAll();
+        } else if (filter.equals("all")) {
             result = bookService.findAll(pageRequest);
         } else if (filter.equals("skipped")) {
             result = bookService.findSkipped(pageRequest);

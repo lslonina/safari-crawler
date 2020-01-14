@@ -12,11 +12,14 @@ public class Book {
     @JsonProperty("identifier")
     private String identifier;
 
+    @JsonProperty("title")
+    private String title;
+
     @JsonProperty("authors")
     private List<String> authors;
 
-    @JsonProperty("title")
-    private String title;
+    @JsonProperty("publishers")
+    private List<String> publishers;
 
     @JsonProperty("description")
     private String description;
@@ -36,10 +39,13 @@ public class Book {
     @JsonProperty("published")
     private Date published;
 
-    public Book() {
-    }
+    @JsonProperty("updated")
+    private Date updated;
 
-    public Book(String identifier, String title, List<String> authors, String description, int pages, String cover, int priority, Date added, Date published) {
+    @JsonProperty("modificationTimestamp")
+    private Date modificationTimestamp;
+
+    public Book(String identifier, String title, List<String> authors, List<String> publishers, String description, int pages, String cover, int priority, Date added, Date published, Date updated) {
         this.identifier = identifier;
         this.title = title;
         this.authors = authors;
@@ -49,6 +55,8 @@ public class Book {
         this.priority = priority;
         this.added = added;
         this.published = published;
+        this.updated = updated;
+        this.publishers = publishers;
     }
 
     public String getIdentifier() {
@@ -105,5 +113,45 @@ public class Book {
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public Date getAdded() {
+        return added;
+    }
+
+    public void setAdded(Date added) {
+        this.added = added;
+    }
+
+    public Date getPublished() {
+        return published;
+    }
+
+    public void setPublished(Date published) {
+        this.published = published;
+    }
+
+    public Date getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(Date updated) {
+        this.updated = updated;
+    }
+
+    public List<String> getPublishers() {
+        return publishers;
+    }
+
+    public void setPublishers(List<String> publishers) {
+        this.publishers = publishers;
+    }
+
+    public Date getModificationTimestamp() {
+        return modificationTimestamp;
+    }
+
+    public void setModificationTimestamp(Date modificationTimestamp) {
+        this.modificationTimestamp = modificationTimestamp;
     }
 }

@@ -57,7 +57,7 @@ import org.springframework.data.annotation.Id;
     "duration_seconds",
     "pagecount"
 })
-public class BookDetails {
+public class SafariBookDetails {
 
     @JsonProperty("url")
     private String url;
@@ -559,7 +559,7 @@ public class BookDetails {
     }
 
     @JsonProperty("pagecount")
-    public Integer getPagecount() {
+    public Integer getPageCount() {
         return pagecount;
     }
 

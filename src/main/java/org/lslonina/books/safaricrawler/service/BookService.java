@@ -4,12 +4,20 @@ import org.lslonina.books.safaricrawler.dto.Book;
 import org.lslonina.books.safaricrawler.repository.BookRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
+import java.util.Date;
+import java.util.List;
 
 public class BookService {
     private final BookRepository bookRepository;
 
     public BookService(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
+    }
+
+    public List<Book> findAll() {
+        return bookRepository.findAll(Sort.by("added").descending());
     }
 
     public Page<Book> findAll(PageRequest pageRequest) {
@@ -33,14 +41,17 @@ public class BookService {
     }
 
     public void skip(String id) {
-        Book book = findById(id);
-        book.setPriority(-1);
-        bookRepository.save(book);
+        updateBookPriority(id, -1);
     }
 
     public void select(String id) {
+        updateBookPriority(id, 1);
+    }
+
+    private void updateBookPriority(String id, int priority) {
         Book book = findById(id);
-        book.setPriority(1);
+        book.setModificationTimestamp(new Date());
+        book.setPriority(priority);
         bookRepository.save(book);
     }
 }

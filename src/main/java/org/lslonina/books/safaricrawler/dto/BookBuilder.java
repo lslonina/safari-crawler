@@ -13,6 +13,8 @@ public class BookBuilder {
     private int priority;
     private Date added;
     private Date published;
+    private Date modified;
+    private List<String> publishers;
 
     public BookBuilder(String identifier) {
         this.identifier = identifier;
@@ -58,7 +60,19 @@ public class BookBuilder {
         return this;
     }
 
+    public BookBuilder withModified(Date modified) {
+        this.modified = modified;
+        return this;
+    }
+
+    public BookBuilder withPublishers(List<String> publishers) {
+        this.publishers = publishers;
+        return this;
+    }
+
     public Book build() {
-        return new Book(identifier, title, authors, description, pages, cover, priority, added, published);
+        Book book = new Book(identifier, title, authors, publishers, description, pages, cover, priority, added, published, modified);
+        book.setModificationTimestamp(new Date());
+        return book;
     }
 }

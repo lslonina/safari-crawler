@@ -14,6 +14,7 @@ class Home extends Component {
                     <Button color="link"><Link to="/books?filter=selected">Selected books</Link></Button>
                     <Button color="link"><Link to="/books?filter=skipped">Skipped books</Link></Button>
                     <Button color="link"><Link to="/books?filter=all">All books</Link></Button>
+                    <Button color="link"><Link to="/books">All books (not paged)</Link></Button>
                 </Container>
             </div>
         );

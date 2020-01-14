@@ -22,14 +22,22 @@ public class SafariCrawlerApplication {
     @Bean
     public CommandLineRunner run(SafariBookRepository safariBookRepository, SafariBookDetailsRepository bookDetailsRepository, BookRepository bookRepository, Crawler crawler) throws Exception {
         return args -> {
-//            fetchData(safariBookRepository, bookDetailsRepository, bookRepository, crawler);
+            fetchData(safariBookRepository, bookDetailsRepository, bookRepository, crawler);
         };
     }
 
     private void fetchData(SafariBookRepository safariBookRepository, SafariBookDetailsRepository bookDetailsRepository, BookRepository bookRepository, Crawler crawler) {
-        bookDetailsRepository.deleteAll();
-        bookRepository.deleteAll();
+//        deleteData(safariBookRepository, bookDetailsRepository, bookRepository);
+        try {
+            crawler.loadData();
+        } catch (RuntimeException ex) {
+            log.info("Can't load data", ex);
+        }
+    }
+
+    private void deleteData(SafariBookRepository safariBookRepository, SafariBookDetailsRepository safariBookDetailsRepository, BookRepository bookRepository) {
+        safariBookDetailsRepository.deleteAll();
         safariBookRepository.deleteAll();
-        crawler.loadData();
+        bookRepository.deleteAll();
     }
 }

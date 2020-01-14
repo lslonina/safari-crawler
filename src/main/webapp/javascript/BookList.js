@@ -59,7 +59,11 @@ class BookList extends Component {
             credentials: 'include'
         }).then(() => {
             let updatedGroups = [...this.state.books].filter(i => i.identifier !== id);
-            this.setState({books: updatedGroups});
+            if (updatedGroups.length > 0) {
+                this.setState({books: updatedGroups});
+            } else {
+                this.queryBooks();
+            }
         });
     }
 
@@ -75,8 +79,10 @@ class BookList extends Component {
             const desc = parse(book.description);
             const added = Date.parse(book.added)
             const published = Date.parse(book.published)
+            const authors = book.authors ? book.authors.join(', ') : "Unknown";
+            const publishers = book.publishers ? book.publishers.join(', ') : "Unknown";
             return <tr key={book.identifier}>
-                <td style={{whiteSpace: 'wrap'}}>{book.title}</td>
+                <td style={{whiteSpace: 'wrap'}}>{book.title}<br/><br/>{authors}<br/><br/>{publishers}</td>
                 <td style={{whiteSpace: 'pre-wrap'}}>{desc}</td>
                 <td style={{whiteSpace: 'nowrap'}}><Moment format={"DD-MM-YYYY"}>{published}</Moment></td>
                 <td style={{whiteSpace: 'nowrap'}}><Moment format={"DD-MM-YYYY"}>{added}</Moment></td>

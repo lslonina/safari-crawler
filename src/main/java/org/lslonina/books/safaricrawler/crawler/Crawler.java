@@ -1,8 +1,10 @@
 package org.lslonina.books.safaricrawler.crawler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.lslonina.books.safaricrawler.dto.Book;
 import org.lslonina.books.safaricrawler.dto.BookBuilder;
-import org.lslonina.books.safaricrawler.model.details.BookDetails;
+import org.lslonina.books.safaricrawler.model.details.SafariBookDetails;
 import org.lslonina.books.safaricrawler.model.generic.QueryResult;
 import org.lslonina.books.safaricrawler.model.generic.SafariBook;
 import org.lslonina.books.safaricrawler.repository.BookRepository;
@@ -42,69 +44,116 @@ public class Crawler {
     }
 
     public void loadData() {
-        List<SafariBook> safariBooks = getSafariBooks(0);
-        safariBookRepository.saveAll(safariBooks);
+        //TODO: stop when max added date > current date
+//        Book topDate = bookRepository.findTop1ByUpdated();
+//        log.info("Max updated: " + topDate.getUpdated());
 
-        List<BookDetails> bookDetails = getBookDetails(safariBooks);
-        safariBookDetailsRepository.saveAll(bookDetails);
+        for (int page = 270; page < 400; ++page) {
+            List<SafariBook> safariBooks = getSafariBooks(page);
+            List<SafariBook> existingSafariBooks = safariBookRepository.findAllByArchiveIdIn(safariBooks.stream().map(SafariBook::getArchiveId).collect(Collectors.toSet()));
+            Set<String> existingIds = existingSafariBooks.stream().map(SafariBook::getArchiveId).collect(Collectors.toSet());
+            log.info("Existing books: " + existingSafariBooks.size());
+            //TODO: compare existing books for changes
+            List<SafariBook> newBooks = safariBooks.stream().filter(b -> !existingIds.contains(b.getArchiveId())).collect(Collectors.toList());
+            safariBookRepository.saveAll(newBooks);
 
-        List<Book> books = createBooks(safariBooks, bookDetails);
-        bookRepository.saveAll(books);
-    }
+            //TODO: check if full reload required
+            List<SafariBookDetails> safariBookDetails = safariBookDetailsRepository.findAllByIdentifierIn(existingIds);
+            Set<String> safariBookDetailIds = safariBookDetails.stream().map(SafariBookDetails::getIdentifier).collect(Collectors.toSet());
+            List<SafariBook> booksWithoutBookDetails = safariBooks.stream().filter(b -> !safariBookDetailIds.contains(b.getArchiveId())).collect(Collectors.toList());
 
-    private List<BookDetails> getBookDetails(List<SafariBook> safariBooks) {
-        return safariBooks.stream().map(safariBook -> {
-            log.info("Fetching details for: " + safariBook.getTitle());
-            BookDetails details = restTemplate.getForObject(safariBook.getUrl(), BookDetails.class);
-            log.info("Fetched details for: " + safariBook.getTitle());
-            return details;
-        }).collect(Collectors.toList());
+            log.info("Fetching details for books: " + booksWithoutBookDetails.size());
+            List<SafariBookDetails> newSafariBookDetails = getBookDetails(booksWithoutBookDetails);
+
+            try {
+                safariBookDetailsRepository.saveAll(newSafariBookDetails);
+            } catch (Exception e) {
+                for (SafariBookDetails newSafariBookDetail : newSafariBookDetails) {
+                    try {
+                        safariBookDetailsRepository.save(newSafariBookDetail);
+                    } catch (RuntimeException ex) {
+                        ObjectMapper mapper = new ObjectMapper();
+                        try {
+                            String json = mapper.writeValueAsString(newSafariBookDetail);
+                            log.error("Error storing: " + json);
+                        } catch (JsonProcessingException exc) {
+                            exc.printStackTrace();
+                        }
+                    }
+                }
+            }
+            safariBookDetails.addAll(newSafariBookDetails);
+
+            List<Book> existingBooks = bookRepository.findAllByIdentifierIn(existingIds);
+            List<Book> books = createBooks(safariBooks, safariBookDetails, existingBooks);
+            bookRepository.saveAll(books);
+        }
     }
 
     private List<SafariBook> getSafariBooks(int page) {
         String address = createQueryBooksAddress(page);
         log.info("Fetching: " + address);
-        List<SafariBook> safariBooks = restTemplate.getForObject(address, QueryResult.class).getSafariBooks();
-        log.info("Fetched: " + safariBooks.size());
-        return safariBooks;
+        QueryResult queryResult = restTemplate.getForObject(address, QueryResult.class);
+        return queryResult.getSafariBooks();
     }
 
-    private List<Book> createBooks(List<SafariBook> safariBooks, List<BookDetails> bookDetails) {
-        Map<String, BookDetails> bookDetailsMap = bookDetails.stream()
-                .collect(Collectors.toMap(BookDetails::getIdentifier, details -> details));
-
-        return safariBooks.stream().map(safariBook -> createBook(safariBook, bookDetailsMap.get(safariBook.getArchiveId()), getCover(safariBook))).collect(Collectors.toList());
+    private List<SafariBookDetails> getBookDetails(List<SafariBook> safariBooks) {
+        return safariBooks.stream().map(safariBook -> restTemplate.getForObject(safariBook.getUrl(), SafariBookDetails.class)).collect(Collectors.toList());
     }
 
-    private Book createBook(SafariBook safariBook, BookDetails details, String coverData) {
-        Date dateAdded = Date.from(Instant.parse(safariBook.getDateAdded()));
-        Date datePublished = Date.from(Instant.parse(safariBook.getIssued()));
+    private List<Book> createBooks(List<SafariBook> safariBooks, List<SafariBookDetails> safariBookDetails, List<Book> existingBooks) {
+        Map<String, SafariBookDetails> bookDetailsMap = safariBookDetails.stream()
+                .collect(Collectors.toMap(SafariBookDetails::getIdentifier, details -> details));
+
+        Map<String, Book> existingBooksMap = existingBooks.stream()
+                .collect(Collectors.toMap(Book::getIdentifier, details -> details));
+
+        List<Book> list = new ArrayList<>();
+        for (SafariBook safariBook : safariBooks) {
+            SafariBookDetails details = bookDetailsMap.get(safariBook.getArchiveId());
+            Book existingBook = existingBooksMap.get(safariBook.getArchiveId());
+            String cover = existingBook != null ? existingBook.getCover().equals("") ? getCover(safariBook) : existingBook.getCover() : getCover(safariBook);
+            Book book = createBook(safariBook, details, existingBook, cover);
+            list.add(book);
+        }
+        return list;
+    }
+
+    private Book createBook(SafariBook safariBook, SafariBookDetails details, Book book, String coverData) {
+        String added = safariBook.getDateAdded();
+        Date dateAdded = added != null ? Date.from(Instant.parse(added)) : null;
+        String issued = safariBook.getIssued();
+        Date datePublished = issued != null ? Date.from(Instant.parse(issued)) : null;
+        String modified = safariBook.getLastModifiedTime();
+        Date dateModified = issued != null ? Date.from(Instant.parse(modified)) : null;
+        int pageCount = details.getPageCount() != null ? details.getPageCount() : -1;
+        int priority = book != null ? book.getPriority() : 0;
 
         BookBuilder bookBuilder = new BookBuilder(safariBook.getArchiveId())
                 .withTitle(safariBook.getTitle())
+                .withPublishers(safariBook.getPublishers())
                 .withAuthors(safariBook.getAuthors())
                 .withDescription(details.getDescription())
-                .withPages(details.getPagecount())
+                .withPages(pageCount)
                 .withCover(coverData)
-                .withPriority(0)
+                .withPriority(priority)
                 .withAdded(dateAdded)
-                .withPublished(datePublished);
+                .withPublished(datePublished)
+                .withModified(dateModified);
         return bookBuilder.build();
     }
 
     private String getCover(SafariBook safariBook) {
-        log.info("Fetching cover for: " + safariBook.getTitle());
-        byte[] imageBytes = restTemplate.getForObject(safariBook.getCoverUrl(), byte[].class);
-        String imageAsString = Base64.getEncoder().encodeToString(imageBytes);
-        if (imageAsString.isBlank()) {
+        try {
+            byte[] imageBytes = restTemplate.getForObject(safariBook.getCoverUrl(), byte[].class);
+            String imageAsString = Base64.getEncoder().encodeToString(imageBytes);
+            if (imageAsString.isBlank()) {
+                log.warn("Can't fetch cover for: " + safariBook.getCoverUrl());
+            }
+            return imageAsString;
+        } catch (Exception ex) {
             log.warn("Can't fetch cover for: " + safariBook.getCoverUrl());
         }
-        log.info("Fetched cover for: " + safariBook.getCoverUrl());
-        return imageAsString;
-    }
-
-    private String getKey(SafariBook safariBook) {
-        List<String> publishers = safariBook.getPublishers();
-        return publishers == null ? "Unknown" : publishers.get(0);
+        return "";
     }
 }

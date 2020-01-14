@@ -4,6 +4,7 @@ package org.lslonina.books.safaricrawler.model.generic;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -473,5 +474,49 @@ public class SafariBook {
                 ", topicsPayload=" + topicsPayload +
                 ", additionalProperties=" + additionalProperties +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SafariBook that = (SafariBook) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(authors, that.authors) &&
+                Objects.equals(lastModifiedTime, that.lastModifiedTime) &&
+                Objects.equals(format, that.format) &&
+                Objects.equals(contentFormat, that.contentFormat) &&
+                Objects.equals(archiveId, that.archiveId) &&
+                Objects.equals(isbn, that.isbn) &&
+                Objects.equals(issued, that.issued) &&
+                Objects.equals(language, that.language) &&
+                Objects.equals(publishers, that.publishers) &&
+                Objects.equals(title, that.title) &&
+                Objects.equals(url, that.url) &&
+                Objects.equals(virtualPages, that.virtualPages) &&
+                Objects.equals(webUrl, that.webUrl) &&
+                Objects.equals(contentType, that.contentType) &&
+                Objects.equals(source, that.source) &&
+                Objects.equals(academicExcluded, that.academicExcluded) &&
+                Objects.equals(ourn, that.ourn) &&
+                Objects.equals(durationSeconds, that.durationSeconds) &&
+                Objects.equals(hasAssessment, that.hasAssessment) &&
+                Objects.equals(timestamp, that.timestamp) &&
+                Objects.equals(averageRating, that.averageRating) &&
+                Objects.equals(numberOfFollowers, that.numberOfFollowers) &&
+                Objects.equals(numberOfItems, that.numberOfItems) &&
+                Objects.equals(numberOfReviews, that.numberOfReviews) &&
+                Objects.equals(popularity, that.popularity) &&
+                Objects.equals(reportScore, that.reportScore) &&
+                Objects.equals(coverUrl, that.coverUrl) &&
+                Objects.equals(dateAdded, that.dateAdded) &&
+                Objects.equals(topics, that.topics) &&
+                Objects.equals(topicsPayload, that.topicsPayload) &&
+                Objects.equals(additionalProperties, that.additionalProperties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, authors, lastModifiedTime, format, contentFormat, archiveId, isbn, issued, language, publishers, title, url, virtualPages, webUrl, contentType, source, academicExcluded, ourn, durationSeconds, hasAssessment, timestamp, averageRating, numberOfFollowers, numberOfItems, numberOfReviews, popularity, reportScore, coverUrl, dateAdded, topics, topicsPayload, additionalProperties);
     }
 }
