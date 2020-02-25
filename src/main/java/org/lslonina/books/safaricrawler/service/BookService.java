@@ -32,6 +32,10 @@ public class BookService {
         return bookRepository.findAllByPriorityGreaterThan(0, pageRequest);
     }
 
+    public Page<Book> findAllSelected() {
+        return bookRepository.findAllByPriorityGreaterThan(0, PageRequest.of(0, Integer.MAX_VALUE, Sort.by("modificationTimestamp").descending()));
+    }
+
     public Page<Book> findUnprocessed(PageRequest pageRequest) {
         return bookRepository.findAllByPriorityEquals(0, pageRequest);
     }

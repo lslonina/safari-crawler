@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class Book {
     @Id
@@ -153,5 +154,28 @@ public class Book {
 
     public void setModificationTimestamp(Date modificationTimestamp) {
         this.modificationTimestamp = modificationTimestamp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        return pages == book.pages &&
+                priority == book.priority &&
+                Objects.equals(identifier, book.identifier) &&
+                Objects.equals(title, book.title) &&
+                Objects.equals(authors, book.authors) &&
+                Objects.equals(publishers, book.publishers) &&
+                Objects.equals(description, book.description) &&
+                Objects.equals(cover, book.cover) &&
+                Objects.equals(added, book.added) &&
+                Objects.equals(published, book.published) &&
+                Objects.equals(updated, book.updated);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(identifier, title, authors, publishers, description, pages, cover, priority, added, published, updated);
     }
 }

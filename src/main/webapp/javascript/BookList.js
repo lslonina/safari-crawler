@@ -76,7 +76,16 @@ class BookList extends Component {
         }
 
         const groupList = books.map(book => {
-            const desc = parse(book.description);
+            let desc;
+            if (book.description) {
+                try {
+                    desc = parse(book.description);
+                } catch (exception) {
+                    desc = "Can't parse description";
+                }
+            } else {
+                desc = "Description not available.";
+            }
             const added = Date.parse(book.added)
             const published = Date.parse(book.published)
             const authors = book.authors ? book.authors.join(', ') : "Unknown";

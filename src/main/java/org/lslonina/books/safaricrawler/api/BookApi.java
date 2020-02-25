@@ -27,15 +27,16 @@ public class BookApi {
     }
 
     @GetMapping("/books")
-    public List<Book> bookList(@RequestParam(required = false) String filter) {
-        PageRequest pageRequest = PageRequest.of(0, 20, Sort.by("published").descending());
+    public List<Book> bookList(@RequestParam(required = false) String filter, @RequestParam(required = false) Integer page) {
+        PageRequest pageRequest = PageRequest.of(page == null ? 0 : page, 100, Sort.by("published").descending());
         Page<Book> result;
         if (filter == null) {
-            return bookService.findAll();
+            return bookService.findAllSelected().toList();
         } else if (filter.equals("all")) {
             result = bookService.findAll(pageRequest);
         } else if (filter.equals("skipped")) {
-            result = bookService.findSkipped(pageRequest);
+            PageRequest skippedPageRequest = PageRequest.of(page == null ? 0 : page, 100, Sort.by("modificationTimestamp").descending());
+            result = bookService.findSkipped(skippedPageRequest);
         } else if (filter.equals("selected")) {
             result = bookService.findSelected(pageRequest);
         } else if (filter.equals("unprocessed")) {
@@ -43,45 +44,43 @@ public class BookApi {
         } else {
             throw new RuntimeException("Query param not supported: " + filter);
         }
+        log.info("Total: " + result.getTotalElements());
         return result.toList();
     }
 
     @GetMapping("/books/{id}")
     public Book one(@PathVariable String id) {
-        log.info("Getting details for: " + id);
         if (!id.equals("undefined")) {
             return bookService.findById(id);
         }
+        log.info("Undefined: " + id);
         return null;
     }
 
     @PostMapping("/books/{id}/skip")
     public void skip(@PathVariable String id) {
-        log.info("Skipping: " + id);
         if (!id.equals("undefined")) {
             bookService.skip(id);
         }
-        log.info("Skipped: " + id);
     }
 
     @PostMapping("/books/{id}/select")
     public void select(@PathVariable String id) {
-        log.info("Selecting: " + id);
+//        log.info("Selecting: " + id);
         if (!id.equals("undefined")) {
             bookService.select(id);
         }
-        log.info("Selected: " + id);
     }
 
     @GetMapping(value = "/books/{id}/cover")
     public ResponseEntity<byte[]> getImage(@PathVariable("id") String id) {
-        log.info("Getting cover for: " + id);
         if (!id.equals("undefined")) {
             Book book = bookService.findById(id);
             String cover = book.getCover();
             byte[] image = Base64.getDecoder().decode(cover);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
         }
+        log.info("Getting cover for: " + id);
         return null;
     }
 }

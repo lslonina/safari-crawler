@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class Crawler {
     private static final Logger log = LoggerFactory.getLogger(Crawler.class);
     public static final String BASE = "https://learning.oreilly.com/api/v2/search/";
-    public static final String LIMIT = "100";
+    public static final String LIMIT = "200";
     public static final String SORT_BY_DATE_ADDED = "date_added";
     public static final String SORT_BY_PUBLICATION_DATE = "publication_date";
     public static final String SORT_BY = SORT_BY_DATE_ADDED;
@@ -36,7 +36,8 @@ public class Crawler {
     private final SafariBookDetailsRepository safariBookDetailsRepository;
     private final BookRepository bookRepository;
 
-    public Crawler(RestTemplate restTemplate, SafariBookRepository safariBookRepository, SafariBookDetailsRepository safariBookDetailsRepository, BookRepository bookCoverRepository) {
+    public Crawler(RestTemplate restTemplate, SafariBookRepository safariBookRepository,
+                   SafariBookDetailsRepository safariBookDetailsRepository, BookRepository bookCoverRepository) {
         this.restTemplate = restTemplate;
         this.safariBookRepository = safariBookRepository;
         this.safariBookDetailsRepository = safariBookDetailsRepository;
@@ -48,46 +49,55 @@ public class Crawler {
 //        Book topDate = bookRepository.findTop1ByUpdated();
 //        log.info("Max updated: " + topDate.getUpdated());
 
-        for (int page = 270; page < 400; ++page) {
-            List<SafariBook> safariBooks = getSafariBooks(page);
-            List<SafariBook> existingSafariBooks = safariBookRepository.findAllByArchiveIdIn(safariBooks.stream().map(SafariBook::getArchiveId).collect(Collectors.toSet()));
-            Set<String> existingIds = existingSafariBooks.stream().map(SafariBook::getArchiveId).collect(Collectors.toSet());
-            log.info("Existing books: " + existingSafariBooks.size());
-            //TODO: compare existing books for changes
-            List<SafariBook> newBooks = safariBooks.stream().filter(b -> !existingIds.contains(b.getArchiveId())).collect(Collectors.toList());
-            safariBookRepository.saveAll(newBooks);
-
-            //TODO: check if full reload required
-            List<SafariBookDetails> safariBookDetails = safariBookDetailsRepository.findAllByIdentifierIn(existingIds);
-            Set<String> safariBookDetailIds = safariBookDetails.stream().map(SafariBookDetails::getIdentifier).collect(Collectors.toSet());
-            List<SafariBook> booksWithoutBookDetails = safariBooks.stream().filter(b -> !safariBookDetailIds.contains(b.getArchiveId())).collect(Collectors.toList());
-
-            log.info("Fetching details for books: " + booksWithoutBookDetails.size());
-            List<SafariBookDetails> newSafariBookDetails = getBookDetails(booksWithoutBookDetails);
-
+        for (int page = 0; page < 210; ++page) {
             try {
-                safariBookDetailsRepository.saveAll(newSafariBookDetails);
+                List<SafariBook> safariBooks = getSafariBooks(page);
+                processSafariBooks(safariBooks);
             } catch (Exception e) {
-                for (SafariBookDetails newSafariBookDetail : newSafariBookDetails) {
+                log.error("Error while processing page {}", page, e);
+            }
+        }
+    }
+
+    private void processSafariBooks(List<SafariBook> safariBooks) {
+        List<SafariBook> existingSafariBooks = safariBookRepository.findAllByArchiveIdIn(safariBooks.stream().map(SafariBook::getArchiveId).collect(Collectors.toSet()));
+        Set<String> existingIds = existingSafariBooks.stream().map(SafariBook::getArchiveId).collect(Collectors.toSet());
+        log.info("Existing books: " + existingSafariBooks.size());
+        //TODO: compare existing books for changes
+        List<SafariBook> newBooks = safariBooks.stream().filter(b -> !existingIds.contains(b.getArchiveId())).collect(Collectors.toList());
+        safariBookRepository.saveAll(newBooks);
+
+        //TODO: check if full reload required
+        List<SafariBookDetails> safariBookDetails = safariBookDetailsRepository.findAllByIdentifierIn(existingIds);
+        Set<String> safariBookDetailIds = safariBookDetails.stream().map(SafariBookDetails::getIdentifier).collect(Collectors.toSet());
+        List<SafariBook> booksWithoutBookDetails = safariBooks.stream().filter(b -> !safariBookDetailIds.contains(b.getArchiveId())).collect(Collectors.toList());
+
+        log.info("Fetching details for books: " + booksWithoutBookDetails.size());
+        List<SafariBookDetails> newSafariBookDetails = getBookDetails(booksWithoutBookDetails);
+
+        try {
+            safariBookDetailsRepository.saveAll(newSafariBookDetails);
+        } catch (Exception e) {
+            log.error("Can't store at once", e);
+            for (SafariBookDetails newSafariBookDetail : newSafariBookDetails) {
+                try {
+                    safariBookDetailsRepository.save(newSafariBookDetail);
+                } catch (RuntimeException ex) {
+                    ObjectMapper mapper = new ObjectMapper();
                     try {
-                        safariBookDetailsRepository.save(newSafariBookDetail);
-                    } catch (RuntimeException ex) {
-                        ObjectMapper mapper = new ObjectMapper();
-                        try {
-                            String json = mapper.writeValueAsString(newSafariBookDetail);
-                            log.error("Error storing: " + json);
-                        } catch (JsonProcessingException exc) {
-                            exc.printStackTrace();
-                        }
+                        String json = mapper.writeValueAsString(newSafariBookDetail);
+                        log.error("Error storing: " + json);
+                    } catch (JsonProcessingException exc) {
+                        exc.printStackTrace();
                     }
                 }
             }
-            safariBookDetails.addAll(newSafariBookDetails);
-
-            List<Book> existingBooks = bookRepository.findAllByIdentifierIn(existingIds);
-            List<Book> books = createBooks(safariBooks, safariBookDetails, existingBooks);
-            bookRepository.saveAll(books);
         }
+        safariBookDetails.addAll(newSafariBookDetails);
+
+        List<Book> existingBooks = bookRepository.findAllByIdentifierIn(existingIds);
+        List<Book> books = createBooks(safariBooks, safariBookDetails, existingBooks);
+        bookRepository.saveAll(books);
     }
 
     private List<SafariBook> getSafariBooks(int page) {
@@ -98,7 +108,16 @@ public class Crawler {
     }
 
     private List<SafariBookDetails> getBookDetails(List<SafariBook> safariBooks) {
-        return safariBooks.stream().map(safariBook -> restTemplate.getForObject(safariBook.getUrl(), SafariBookDetails.class)).collect(Collectors.toList());
+        List<SafariBookDetails> list = new ArrayList<>();
+        for (SafariBook safariBook : safariBooks) {
+            try {
+                SafariBookDetails forObject = restTemplate.getForObject(safariBook.getUrl(), SafariBookDetails.class);
+                list.add(forObject);
+            } catch (RuntimeException e) {
+                log.error("Can't fetch details for: " + safariBook.getTitle());
+            }
+        }
+        return list;
     }
 
     private List<Book> createBooks(List<SafariBook> safariBooks, List<SafariBookDetails> safariBookDetails, List<Book> existingBooks) {
@@ -111,15 +130,20 @@ public class Crawler {
         List<Book> list = new ArrayList<>();
         for (SafariBook safariBook : safariBooks) {
             SafariBookDetails details = bookDetailsMap.get(safariBook.getArchiveId());
-            Book existingBook = existingBooksMap.get(safariBook.getArchiveId());
-            String cover = existingBook != null ? existingBook.getCover().equals("") ? getCover(safariBook) : existingBook.getCover() : getCover(safariBook);
-            Book book = createBook(safariBook, details, existingBook, cover);
-            list.add(book);
+            if (details != null) {
+                Book existingBook = existingBooksMap.get(safariBook.getArchiveId());
+                String cover = existingBook != null ? existingBook.getCover().equals("") ? getCover(safariBook) : existingBook.getCover() : getCover(safariBook);
+                Book book = createBook(safariBook, details, existingBook, cover);
+                if (book != null) {
+                    log.info("Changed book: " + book.getTitle());
+                    list.add(book);
+                }
+            }
         }
         return list;
     }
 
-    private Book createBook(SafariBook safariBook, SafariBookDetails details, Book book, String coverData) {
+    private Book createBook(SafariBook safariBook, SafariBookDetails details, Book existingBook, String coverData) {
         String added = safariBook.getDateAdded();
         Date dateAdded = added != null ? Date.from(Instant.parse(added)) : null;
         String issued = safariBook.getIssued();
@@ -127,7 +151,7 @@ public class Crawler {
         String modified = safariBook.getLastModifiedTime();
         Date dateModified = issued != null ? Date.from(Instant.parse(modified)) : null;
         int pageCount = details.getPageCount() != null ? details.getPageCount() : -1;
-        int priority = book != null ? book.getPriority() : 0;
+        int priority = existingBook != null ? existingBook.getPriority() : 0;
 
         BookBuilder bookBuilder = new BookBuilder(safariBook.getArchiveId())
                 .withTitle(safariBook.getTitle())
@@ -140,7 +164,9 @@ public class Crawler {
                 .withAdded(dateAdded)
                 .withPublished(datePublished)
                 .withModified(dateModified);
-        return bookBuilder.build();
+        Book newBook = bookBuilder.build();
+
+        return Objects.equals(newBook, existingBook) ? null : newBook;
     }
 
     private String getCover(SafariBook safariBook) {
