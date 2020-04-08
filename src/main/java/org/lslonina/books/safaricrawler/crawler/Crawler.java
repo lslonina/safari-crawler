@@ -45,14 +45,16 @@ public class Crawler {
     }
 
     public void loadData() {
-        //TODO: stop when max added date > current date
-//        Book topDate = bookRepository.findTop1ByUpdated();
-//        log.info("Max updated: " + topDate.getUpdated());
-
-        for (int page = 0; page < 210; ++page) {
+        int page = 0;
+        while (true) {
             try {
                 List<SafariBook> safariBooks = getSafariBooks(page);
+                if (safariBooks.isEmpty()) {
+                    log.info("Finished loading books, pages: " + page);
+                    return;
+                }
                 processSafariBooks(safariBooks);
+                page++;
             } catch (Exception e) {
                 log.error("Error while processing page {}", page, e);
             }

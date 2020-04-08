@@ -6,6 +6,7 @@ import org.lslonina.books.safaricrawler.service.BookService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
@@ -13,7 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Base64;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -39,6 +43,9 @@ public class BookApi {
             result = bookService.findSkipped(skippedPageRequest);
         } else if (filter.equals("selected")) {
             result = bookService.findSelected(pageRequest);
+            Date date = Calendar.getInstance().getTime();
+            List<Book> books = result.stream().filter(b -> b.getPublished().before(date)).collect(Collectors.toList());
+            result = new PageImpl<>(books);
         } else if (filter.equals("unprocessed")) {
             result = bookService.findUnprocessed(pageRequest);
         } else {

@@ -16,13 +16,13 @@ class BookList extends Component {
     constructor(props) {
         super(props);
         const {cookies} = props;
-        this.state = {books: [], csrfToken: cookies.get('XSRF-TOKEN'), isLoading: true};
+        this.state = {books: [], csrfToken: cookies.get('XSRF-TOKEN'), isLoading: true, currentPage: 0};
         this.mark = this.mark.bind(this);
     }
 
     componentDidMount() {
         console.log("Component did mount");
-        this.queryBooks();
+        this.queryBooks(0);
     }
 
     componentDidUpdate(prevProps) {
@@ -30,21 +30,21 @@ class BookList extends Component {
         let currentQuery = this.props.location.search;
         let previousQuery = prevProps.location.search;
         if (currentQuery !== previousQuery) {
-            this.queryBooks();
+            this.queryBooks(0);
         }
     }
 
-    queryBooks() {
+    queryBooks(page) {
         let query = this.props.location.search;
         const parsedQuery = queryString.parse(query);
         console.log('parsedQuery', parsedQuery)
         const filter = parsedQuery.filter;
 
-        this.setState({isLoading: true});
+        this.setState({isLoading: true, currentPage: page});
 
-        fetch('api/books' + query, {credentials: 'include'})
+        fetch('api/books' + query + '&page=' + page, {credentials: 'include'})
             .then(response => response.json())
-            .then(data => this.setState({books: data, isLoading: false}))
+            .then(data => this.setState({books: data, isLoading: false, currentPage: page}))
             .catch(() => this.props.history.push('/'));
     }
 
@@ -62,14 +62,17 @@ class BookList extends Component {
             if (updatedGroups.length > 0) {
                 this.setState({books: updatedGroups});
             } else {
-                this.queryBooks();
+                this.queryBooks(this.state.currentPage);
             }
         });
     }
 
     render() {
         console.log("render method is called here");
-        const {books, isLoading} = this.state;
+        const {books, isLoading, currentPage} = this.state;
+
+        const previousPage = currentPage > 0 ? currentPage - 1 : 0;
+        const nextPage = currentPage + 1;
 
         if (isLoading) {
             return <p>Loading...</p>;
@@ -117,7 +120,11 @@ class BookList extends Component {
                     <div className="float-right">
                         <Button color="success" tag={Link} to="/books/new">Add Book</Button>
                     </div>
-                    <h3>My Library</h3>
+                    <h3>My Library, showing: {this.state.books.length}</h3>
+                    <Button size="sm" color="success"
+                            onClick={() => this.queryBooks(previousPage)}>Previous</Button>
+                    <Button size="sm" color="success"
+                            onClick={() => this.queryBooks(nextPage)}>Next</Button>
                     <Table className="mt-6">
                         <thead>
                         <tr>
