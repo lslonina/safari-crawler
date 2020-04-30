@@ -19,7 +19,7 @@
     "core-js": "^3.6.4",
     "css-loader": "^3.5.1",
     "html-react-parser": "^0.10.3",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "moment": "^2.24.0",
     "prop-types": "^15.7.2",
     "query-string": "^6.12.0",
