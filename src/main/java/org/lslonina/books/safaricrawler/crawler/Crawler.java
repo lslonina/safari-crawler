@@ -2,6 +2,9 @@ package org.lslonina.books.safaricrawler.crawler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.danielbechler.diff.ObjectDiffer;
+import de.danielbechler.diff.ObjectDifferBuilder;
+import de.danielbechler.diff.node.DiffNode;
 import org.lslonina.books.safaricrawler.dto.Book;
 import org.lslonina.books.safaricrawler.dto.BookBuilder;
 import org.lslonina.books.safaricrawler.model.details.SafariBookDetails;
@@ -137,7 +140,7 @@ public class Crawler {
                 String cover = existingBook != null ? existingBook.getCover().equals("") ? getCover(safariBook) : existingBook.getCover() : getCover(safariBook);
                 Book book = createBook(safariBook, details, existingBook, cover);
                 if (book != null) {
-                    log.info("Changed book: " + book.getTitle());
+                    logChanges(existingBook, book);
                     list.add(book);
                 }
             }
@@ -169,6 +172,23 @@ public class Crawler {
         Book newBook = bookBuilder.build();
 
         return Objects.equals(newBook, existingBook) ? null : newBook;
+    }
+
+    private void logChanges(Book existingBook, Book book) {
+        if (existingBook == null) {
+            log.info("New book: " + book.getTitle());
+            return;
+        }
+        log.info("Changed book: " + book.getTitle());
+        ObjectDiffer objectDiffer = ObjectDifferBuilder.buildDefault();
+        DiffNode root = objectDiffer.compare(book, existingBook);
+        root.visit((node, visit) -> {
+            final Object baseValue = node.canonicalGet(existingBook);
+            final Object workingValue = node.canonicalGet(book);
+            final String message = node.getPath() + " changed from " +
+                    baseValue + " to " + workingValue;
+            System.out.println( " " + message);
+        });
     }
 
     private String getCover(SafariBook safariBook) {
