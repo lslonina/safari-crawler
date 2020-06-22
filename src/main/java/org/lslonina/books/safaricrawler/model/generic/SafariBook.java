@@ -442,37 +442,10 @@ public class SafariBook {
     public String toString() {
         return "Book{" +
                 "id='" + id + '\'' +
-                ", authors=" + authors +
-                ", lastModifiedTime='" + lastModifiedTime + '\'' +
-                ", format='" + format + '\'' +
-                ", contentFormat='" + contentFormat + '\'' +
                 ", archiveId='" + archiveId + '\'' +
-                ", isbn='" + isbn + '\'' +
-                ", issued='" + issued + '\'' +
-                ", language='" + language + '\'' +
-                ", publishers=" + publishers +
                 ", title='" + title + '\'' +
-                ", url='" + url + '\'' +
-                ", virtualPages=" + virtualPages +
-                ", webUrl='" + webUrl + '\'' +
-                ", contentType='" + contentType + '\'' +
-                ", source='" + source + '\'' +
-                ", academicExcluded=" + academicExcluded +
-                ", ourn='" + ourn + '\'' +
-                ", durationSeconds=" + durationSeconds +
-                ", hasAssessment=" + hasAssessment +
-                ", timestamp='" + timestamp + '\'' +
-                ", averageRating=" + averageRating +
-                ", numberOfFollowers=" + numberOfFollowers +
-                ", numberOfItems=" + numberOfItems +
-                ", numberOfReviews=" + numberOfReviews +
-                ", popularity=" + popularity +
-                ", reportScore=" + reportScore +
-                ", coverUrl='" + coverUrl + '\'' +
-                ", dateAdded='" + dateAdded + '\'' +
-                ", topics=" + topics +
-                ", topicsPayload=" + topicsPayload +
-                ", additionalProperties=" + additionalProperties +
+                ", authors=" + authors +
+                ", isbn='" + isbn + '\'' +
                 '}';
     }
 

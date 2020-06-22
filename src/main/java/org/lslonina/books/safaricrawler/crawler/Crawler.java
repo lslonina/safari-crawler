@@ -2,11 +2,9 @@ package org.lslonina.books.safaricrawler.crawler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.danielbechler.diff.ObjectDiffer;
-import de.danielbechler.diff.ObjectDifferBuilder;
-import de.danielbechler.diff.node.DiffNode;
 import org.lslonina.books.safaricrawler.dto.Book;
 import org.lslonina.books.safaricrawler.dto.BookBuilder;
+import org.lslonina.books.safaricrawler.dto.BookChangeLogger;
 import org.lslonina.books.safaricrawler.model.details.SafariBookDetails;
 import org.lslonina.books.safaricrawler.model.generic.QueryResult;
 import org.lslonina.books.safaricrawler.model.generic.SafariBook;
@@ -17,6 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,6 +29,10 @@ public class Crawler {
     public static final String SORT_BY_DATE_ADDED = "date_added";
     public static final String SORT_BY_PUBLICATION_DATE = "publication_date";
     public static final String SORT_BY = SORT_BY_DATE_ADDED;
+    private final Set<String> ignoredIds;
+    private final Set<String> ignoredIsbns;
+    private final Set<String> selectedIds;
+    private final Set<String> selectedIsbns;
 
     private static String createQueryBooksAddress(int page) {
         return BASE + "?sort=" + SORT_BY + "&query=*&limit=" + LIMIT + "&include_case_studies=true&include_courses=true&include_orioles=true&include_playlists=true&include_collections=true&collection_type=expert&collection_sharing=public&collection_sharing=enterprise&exclude_fields=description&page=" + page + "&formats=book";
@@ -40,11 +45,20 @@ public class Crawler {
     private final BookRepository bookRepository;
 
     public Crawler(RestTemplate restTemplate, SafariBookRepository safariBookRepository,
-                   SafariBookDetailsRepository safariBookDetailsRepository, BookRepository bookCoverRepository) {
+                   SafariBookDetailsRepository safariBookDetailsRepository, BookRepository bookCoverRepository) throws IOException {
         this.restTemplate = restTemplate;
         this.safariBookRepository = safariBookRepository;
         this.safariBookDetailsRepository = safariBookDetailsRepository;
         this.bookRepository = bookCoverRepository;
+
+        ignoredIds = new HashSet<>(Files.readAllLines(Path.of("ignored.csv-id.csv")));
+        ignoredIsbns = new HashSet<>(Files.readAllLines(Path.of("ignored.csv-isbn.csv")));
+        selectedIds = new HashSet<>(Files.readAllLines(Path.of("selected-id.csv")));
+        selectedIsbns = new HashSet<>(Files.readAllLines(Path.of("selected-isbn.csv")));
+        ignoredIds.remove(null);
+        ignoredIsbns.remove(null);
+        selectedIds.remove(null);
+        selectedIsbns.remove(null);
     }
 
     public void loadData() {
@@ -107,9 +121,15 @@ public class Crawler {
 
     private List<SafariBook> getSafariBooks(int page) {
         String address = createQueryBooksAddress(page);
-        log.info("Fetching: " + address);
+        log.info("Fetching page: " + page + ", " + address);
         QueryResult queryResult = restTemplate.getForObject(address, QueryResult.class);
-        return queryResult.getSafariBooks();
+        List<SafariBook> safariBooks = queryResult.getSafariBooks();
+        for (SafariBook safariBook : safariBooks) {
+            String id = safariBook.getId();
+            String fixedId = id.replace(".", "#");
+            safariBook.setId(fixedId);
+        }
+        return safariBooks;
     }
 
     private List<SafariBookDetails> getBookDetails(List<SafariBook> safariBooks) {
@@ -140,7 +160,7 @@ public class Crawler {
                 String cover = existingBook != null ? existingBook.getCover().equals("") ? getCover(safariBook) : existingBook.getCover() : getCover(safariBook);
                 Book book = createBook(safariBook, details, existingBook, cover);
                 if (book != null) {
-                    logChanges(existingBook, book);
+                    BookChangeLogger.logChanges(existingBook, book);
                     list.add(book);
                 }
             }
@@ -154,9 +174,16 @@ public class Crawler {
         String issued = safariBook.getIssued();
         Date datePublished = issued != null ? Date.from(Instant.parse(issued)) : null;
         String modified = safariBook.getLastModifiedTime();
-        Date dateModified = issued != null ? Date.from(Instant.parse(modified)) : null;
+        Date dateModified = modified != null ? Date.from(Instant.parse(modified)) : null;
         int pageCount = details.getPageCount() != null ? details.getPageCount() : -1;
         int priority = existingBook != null ? existingBook.getPriority() : 0;
+        if (priority == 0) {
+            if (selectedIds.contains(safariBook.getArchiveId()) || selectedIsbns.contains(safariBook.getIsbn())) {
+                priority = 1;
+            } else if (ignoredIds.contains(safariBook.getArchiveId()) || ignoredIsbns.contains(safariBook.getIsbn())) {
+                priority = -1;
+            }
+        }
 
         BookBuilder bookBuilder = new BookBuilder(safariBook.getArchiveId())
                 .withTitle(safariBook.getTitle())
@@ -168,27 +195,11 @@ public class Crawler {
                 .withPriority(priority)
                 .withAdded(dateAdded)
                 .withPublished(datePublished)
-                .withModified(dateModified);
+                .withModified(dateModified)
+                .withIsbn(safariBook.getIsbn());
         Book newBook = bookBuilder.build();
 
         return Objects.equals(newBook, existingBook) ? null : newBook;
-    }
-
-    private void logChanges(Book existingBook, Book book) {
-        if (existingBook == null) {
-            log.info("New book: " + book.getTitle());
-            return;
-        }
-        log.info("Changed book: " + book.getTitle());
-        ObjectDiffer objectDiffer = ObjectDifferBuilder.buildDefault();
-        DiffNode root = objectDiffer.compare(book, existingBook);
-        root.visit((node, visit) -> {
-            final Object baseValue = node.canonicalGet(existingBook);
-            final Object workingValue = node.canonicalGet(book);
-            final String message = node.getPath() + " changed from " +
-                    baseValue + " to " + workingValue;
-            System.out.println( " " + message);
-        });
     }
 
     private String getCover(SafariBook safariBook) {

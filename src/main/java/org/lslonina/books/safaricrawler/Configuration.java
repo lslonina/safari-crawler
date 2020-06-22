@@ -38,7 +38,7 @@ public class Configuration {
     }
 
     @Bean
-    public Crawler crawler(RestTemplate restTemplate, SafariBookRepository safariBookRepository, SafariBookDetailsRepository safariBookDetailsRepository, BookRepository bookRepository) {
+    public Crawler crawler(RestTemplate restTemplate, SafariBookRepository safariBookRepository, SafariBookDetailsRepository safariBookDetailsRepository, BookRepository bookRepository) throws IOException {
         return new Crawler(restTemplate, safariBookRepository, safariBookDetailsRepository, bookRepository);
     }
 

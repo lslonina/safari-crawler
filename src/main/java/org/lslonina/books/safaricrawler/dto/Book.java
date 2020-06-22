@@ -22,6 +22,9 @@ public class Book {
     @JsonProperty("publishers")
     private List<String> publishers;
 
+    @JsonProperty("isbn")
+    private String isbn;
+
     @JsonProperty("description")
     private String description;
 
@@ -46,7 +49,7 @@ public class Book {
     @JsonProperty("modificationTimestamp")
     private Date modificationTimestamp;
 
-    public Book(String identifier, String title, List<String> authors, List<String> publishers, String description, int pages, String cover, int priority, Date added, Date published, Date updated) {
+    public Book(String identifier, String title, List<String> authors, List<String> publishers, String description, int pages, String cover, int priority, Date added, Date published, Date updated, String isbn) {
         this.identifier = identifier;
         this.title = title;
         this.authors = authors;
@@ -58,6 +61,7 @@ public class Book {
         this.published = published;
         this.updated = updated;
         this.publishers = publishers;
+        this.isbn = isbn;
     }
 
     public String getIdentifier() {
@@ -156,6 +160,14 @@ public class Book {
         this.modificationTimestamp = modificationTimestamp;
     }
 
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -171,11 +183,17 @@ public class Book {
                 Objects.equals(cover, book.cover) &&
                 Objects.equals(added, book.added) &&
                 Objects.equals(published, book.published) &&
-                Objects.equals(updated, book.updated);
+                Objects.equals(updated, book.updated) &&
+                Objects.equals(isbn, book.isbn);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(identifier, title, authors, publishers, description, pages, cover, priority, added, published, updated);
+        return Objects.hash(identifier, title, authors, publishers, description, pages, cover, priority, added, published, updated, isbn);
+    }
+
+    @Override
+    public String toString() {
+        return identifier + "," + isbn + ",\"" + title + "\",\"" + published + "\",\"" + authors + "\"," + modificationTimestamp + "," + priority ;
     }
 }
