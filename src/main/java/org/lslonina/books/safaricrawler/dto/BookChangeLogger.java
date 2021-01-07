@@ -8,11 +8,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Arrays.*;
 
 public class BookChangeLogger {
     private static final Logger log = LoggerFactory.getLogger(BookChangeLogger.class);
+    public static final Collection<String> IGNORED = asList(
+            "/", "/description", "/cover", "/topicsPayload", "/topics",
+            "/popularity", "/averageRating", "/reportScore", "/numberOfReviews",
+            "/modificationTimestamp", "/updated", "/added");
 
     public static <T> void logChanges(List<T> books) {
         if (books.size() < 2) {
@@ -32,18 +37,28 @@ public class BookChangeLogger {
             log.info("Base book: " + other);
             return;
         }
-        log.info("Changed book: " + other);
         ObjectDiffer objectDiffer = ObjectDifferBuilder.buildDefault();
         DiffNode root = objectDiffer.compare(other, base);
+
+        AtomicInteger counter = new AtomicInteger();
         root.visit((node, visit) -> {
-            printDiff(base, other, node);
+            boolean diff = hasDiff(node);
+            if (diff) {
+                counter.incrementAndGet();
+            }
         });
+
+        if (counter.get() > 0) {
+            log.info("Changed book: " + other);
+            root.visit((node, visit) -> {
+                printDiff(base, other, node);
+            });
+        }
     }
 
     private static <T> void printDiff(T baseObject, T other, DiffNode node) {
-        Collection<String> toIgnore = asList("description", "cover", "topicsPayload", "topics", "popularity", "averageRating", "reportScore", "numberOfReviews");
         String nodeString = node.getPath().toString();
-        if (toIgnore.stream().anyMatch(nodeString::contains)) {
+        if (IGNORED.stream().anyMatch(nodeString::equals)) {
             return;
         }
         final Object baseValue = node.canonicalGet(baseObject);
@@ -52,4 +67,11 @@ public class BookChangeLogger {
         System.out.println("  " + baseValue);
         System.out.println("  " + workingValue);
     }
+
+    private static <T> boolean hasDiff(DiffNode node) {
+        String nodeString = node.getPath().toString();
+        boolean hasOnlyIgnored = IGNORED.stream().noneMatch(nodeString::equals);
+        return hasOnlyIgnored;
+    }
+
 }

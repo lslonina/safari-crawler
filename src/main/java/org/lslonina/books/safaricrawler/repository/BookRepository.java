@@ -10,13 +10,11 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface BookRepository extends MongoRepository<Book, String> {
-    Page<Book> findAllByPriorityEquals(int priority, Pageable pageable);
+    Page<Book> findAllByPriorityEqualsAndLanguageEquals(int priority, String language, Pageable pageable);
 
-    Page<Book> findAllByPriorityLessThan(int priority, Pageable pageable);
+    Page<Book> findAllByPriorityLessThanAndLanguageEquals(int priority, String language, Pageable pageable);
 
-    Page<Book> findAllByPriorityGreaterThan(int priority, Pageable pageable);
+    Page<Book> findAllByPriorityGreaterThanAndLanguageEquals(int priority, String language, Pageable pageable);
 
     List<Book> findAllByIdentifierIn(Set<String> existingIds);
-
-    Book findTop1ByUpdated();
 }

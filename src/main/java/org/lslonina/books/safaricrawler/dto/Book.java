@@ -25,6 +25,9 @@ public class Book {
     @JsonProperty("isbn")
     private String isbn;
 
+    @JsonProperty("language")
+    private String language;
+
     @JsonProperty("description")
     private String description;
 
@@ -49,7 +52,7 @@ public class Book {
     @JsonProperty("modificationTimestamp")
     private Date modificationTimestamp;
 
-    public Book(String identifier, String title, List<String> authors, List<String> publishers, String description, int pages, String cover, int priority, Date added, Date published, Date updated, String isbn) {
+    public Book(String identifier, String title, List<String> authors, List<String> publishers, String description, int pages, String cover, int priority, Date added, Date published, Date updated, String isbn, String language) {
         this.identifier = identifier;
         this.title = title;
         this.authors = authors;
@@ -62,6 +65,7 @@ public class Book {
         this.updated = updated;
         this.publishers = publishers;
         this.isbn = isbn;
+        this.language = language;
     }
 
     public String getIdentifier() {
@@ -168,6 +172,14 @@ public class Book {
         this.isbn = isbn;
     }
 
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -184,12 +196,13 @@ public class Book {
                 Objects.equals(added, book.added) &&
                 Objects.equals(published, book.published) &&
                 Objects.equals(updated, book.updated) &&
-                Objects.equals(isbn, book.isbn);
+                Objects.equals(isbn, book.isbn) &&
+                Objects.equals(language, book.language);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(identifier, title, authors, publishers, description, pages, cover, priority, added, published, updated, isbn);
+        return Objects.hash(identifier, title, authors, publishers, description, pages, cover, priority, added, published, updated, isbn, language);
     }
 
     @Override

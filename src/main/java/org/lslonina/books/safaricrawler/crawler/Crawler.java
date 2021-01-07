@@ -137,6 +137,7 @@ public class Crawler {
         for (SafariBook safariBook : safariBooks) {
             try {
                 SafariBookDetails forObject = restTemplate.getForObject(safariBook.getUrl(), SafariBookDetails.class);
+                forObject.setPublisherResourceLinks(null);
                 list.add(forObject);
             } catch (RuntimeException e) {
                 log.error("Can't fetch details for: " + safariBook.getTitle());
@@ -159,8 +160,10 @@ public class Crawler {
                 Book existingBook = existingBooksMap.get(safariBook.getArchiveId());
                 String cover = existingBook != null ? existingBook.getCover().equals("") ? getCover(safariBook) : existingBook.getCover() : getCover(safariBook);
                 Book book = createBook(safariBook, details, existingBook, cover);
-                if (book != null) {
+                if (book != null && book.getPriority() != -1) {
                     BookChangeLogger.logChanges(existingBook, book);
+                }
+                if (book != null) {
                     list.add(book);
                 }
             }
@@ -196,7 +199,8 @@ public class Crawler {
                 .withAdded(dateAdded)
                 .withPublished(datePublished)
                 .withModified(dateModified)
-                .withIsbn(safariBook.getIsbn());
+                .withIsbn(safariBook.getIsbn())
+                .withLanguage(details.getLanguage());
         Book newBook = bookBuilder.build();
 
         return Objects.equals(newBook, existingBook) ? null : newBook;
@@ -207,11 +211,11 @@ public class Crawler {
             byte[] imageBytes = restTemplate.getForObject(safariBook.getCoverUrl(), byte[].class);
             String imageAsString = Base64.getEncoder().encodeToString(imageBytes);
             if (imageAsString.isBlank()) {
-                log.warn("Can't fetch cover for: " + safariBook.getCoverUrl());
+                log.warn("Can't fetch cover for: " + safariBook.getTitle() + ", " + safariBook.getCoverUrl());
             }
             return imageAsString;
         } catch (Exception ex) {
-            log.warn("Can't fetch cover for: " + safariBook.getCoverUrl());
+            log.warn("Can't fetch cover for: " + safariBook.getTitle() + ", " + safariBook.getCoverUrl());
         }
         return "";
     }

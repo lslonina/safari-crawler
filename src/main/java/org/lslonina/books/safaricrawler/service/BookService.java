@@ -25,19 +25,19 @@ public class BookService {
     }
 
     public Page<Book> findSkipped(PageRequest pageRequest) {
-        return bookRepository.findAllByPriorityLessThan(0, pageRequest);
+        return bookRepository.findAllByPriorityLessThanAndLanguageEquals(0, "en", pageRequest);
     }
 
     public Page<Book> findSelected(PageRequest pageRequest) {
-        return bookRepository.findAllByPriorityGreaterThan(0, pageRequest);
+        return bookRepository.findAllByPriorityGreaterThanAndLanguageEquals(0, "en", pageRequest);
     }
 
     public Page<Book> findAllSelected() {
-        return bookRepository.findAllByPriorityGreaterThan(0, PageRequest.of(0, Integer.MAX_VALUE, Sort.by("modificationTimestamp").descending()));
+        return bookRepository.findAllByPriorityGreaterThanAndLanguageEquals(0, "en", PageRequest.of(0, Integer.MAX_VALUE, Sort.by("modificationTimestamp").descending()));
     }
 
     public Page<Book> findUnprocessed(PageRequest pageRequest) {
-        return bookRepository.findAllByPriorityEquals(0, pageRequest);
+        return bookRepository.findAllByPriorityEqualsAndLanguageEquals(0, "en", pageRequest);
     }
 
     public Book findById(String id) {

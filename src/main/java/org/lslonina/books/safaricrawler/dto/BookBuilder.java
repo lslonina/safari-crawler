@@ -16,6 +16,7 @@ public class BookBuilder {
     private Date modified;
     private List<String> publishers;
     private String isbn;
+    private String language;
 
     public BookBuilder(String identifier) {
         this.identifier = identifier;
@@ -76,8 +77,13 @@ public class BookBuilder {
         return this;
     }
 
+    public BookBuilder withLanguage(String language) {
+        this.language = language;
+        return this;
+    }
+
     public Book build() {
-        Book book = new Book(identifier, title, authors, publishers, description, pages, cover, priority, added, published, modified, isbn);
+        Book book = new Book(identifier, title, authors, publishers, description, pages, cover, priority, added, published, modified, isbn, language);
         book.setModificationTimestamp(new Date());
         return book;
     }

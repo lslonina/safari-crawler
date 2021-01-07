@@ -15,6 +15,10 @@ import org.springframework.context.annotation.Bean;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,7 +34,7 @@ public class SafariCrawlerApplication {
     @Bean
     public CommandLineRunner run(SafariBookRepository safariBookRepository, SafariBookDetailsRepository bookDetailsRepository, BookRepository bookRepository, Crawler crawler) throws Exception {
         return args -> {
-//            export(bookRepository);
+            export(bookRepository);
 //            deleteData(safariBookRepository, bookDetailsRepository, bookRepository);
             fetchData(safariBookRepository, bookDetailsRepository, bookRepository, crawler);
         };
@@ -58,11 +62,15 @@ public class SafariCrawlerApplication {
     }
 
     private void export(List<Book> books, String prefix) {
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String strDate = dateFormat.format(date);
+
         String isbn = books.stream().map(book -> book.getIsbn() + "\n").collect(Collectors.joining());
         String id = books.stream().map(book -> book.getIdentifier() + "\n").collect(Collectors.joining());
         try {
-            Files.write(Path.of(prefix + "-isbn.csv"), isbn.trim().getBytes());
-            Files.write(Path.of(prefix + "-id.csv"), id.trim().getBytes());
+            Files.write(Path.of(prefix + "-isbn-" + strDate+ ".csv"), isbn.trim().getBytes());
+            Files.write(Path.of(prefix + "-id-" + strDate + ".csv"), id.trim().getBytes());
         } catch (IOException e) {
             throw new RuntimeException("Wasn't able to store file: " + prefix);
         }
