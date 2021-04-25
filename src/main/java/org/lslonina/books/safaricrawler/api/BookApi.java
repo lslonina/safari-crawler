@@ -44,8 +44,8 @@ public class BookApi {
         } else if (filter.equals("selected")) {
             result = bookService.findSelected(pageRequest);
             Date date = Calendar.getInstance().getTime();
-//            List<Book> books = result.stream().filter(b -> b.getPublished().before(date)).collect(Collectors.toList());
-//            result = new PageImpl<Book>(books);
+            List<Book> books = result.stream().filter(b -> b.getPublished().before(date)).collect(Collectors.toList());
+            result = new PageImpl<Book>(books);
         } else if (filter.equals("unprocessed")) {
             result = bookService.findUnprocessed(pageRequest);
         } else {

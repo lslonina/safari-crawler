@@ -7,6 +7,7 @@ import org.springframework.data.domain.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class BookService {
@@ -29,7 +30,7 @@ public class BookService {
     }
 
     public Page<Book> findSelected(PageRequest pageRequest) {
-        return bookRepository.findAllByPriorityGreaterThanAndLanguageEquals(0, "en", pageRequest);
+        return bookRepository.findAllByPriorityEqualsAndLanguageEquals(1, "en", pageRequest);
     }
 
     public Page<Book> findAllSelected() {
@@ -49,7 +50,8 @@ public class BookService {
     }
 
     public void select(String id) {
-        updateBookPriority(id, 1);
+        Book byId = findById(id);
+        updateBookPriority(id, byId.getPriority() + 1);
     }
 
     private void updateBookPriority(String id, int priority) {
