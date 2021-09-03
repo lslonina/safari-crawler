@@ -29,10 +29,10 @@ public class Crawler {
     public static final String SORT_BY_DATE_ADDED = "date_added";
     public static final String SORT_BY_PUBLICATION_DATE = "publication_date";
     public static final String SORT_BY = SORT_BY_DATE_ADDED;
-    private final Set<String> ignoredIds;
-    private final Set<String> ignoredIsbns;
-    private final Set<String> selectedIds;
-    private final Set<String> selectedIsbns;
+    private final Set<String> ignoredIds = new HashSet<>();
+    private final Set<String> ignoredIsbns = new HashSet<>();
+    private final Set<String> selectedIds = new HashSet<>();
+    private final Set<String> selectedIsbns = new HashSet<>();
 
     private static String createQueryBooksAddress(int page) {
         return BASE + "?sort=" + SORT_BY + "&query=*&limit=" + LIMIT + "&include_case_studies=true&include_courses=true&include_orioles=true&include_playlists=true&include_collections=true&collection_type=expert&collection_sharing=public&collection_sharing=enterprise&exclude_fields=description&page=" + page + "&formats=book";
@@ -51,14 +51,14 @@ public class Crawler {
         this.safariBookDetailsRepository = safariBookDetailsRepository;
         this.bookRepository = bookCoverRepository;
 
-        ignoredIds = new HashSet<>(Files.readAllLines(Path.of("ignored.csv-id.csv")));
-        ignoredIsbns = new HashSet<>(Files.readAllLines(Path.of("ignored.csv-isbn.csv")));
-        selectedIds = new HashSet<>(Files.readAllLines(Path.of("selected-id.csv")));
-        selectedIsbns = new HashSet<>(Files.readAllLines(Path.of("selected-isbn.csv")));
-        ignoredIds.remove(null);
-        ignoredIsbns.remove(null);
-        selectedIds.remove(null);
-        selectedIsbns.remove(null);
+//        ignoredIds = new HashSet<>(Files.readAllLines(Path.of("ignored.csv-id.csv")));
+//        ignoredIsbns = new HashSet<>(Files.readAllLines(Path.of("ignored.csv-isbn.csv")));
+//        selectedIds = new HashSet<>(Files.readAllLines(Path.of("selected-id.csv")));
+//        selectedIsbns = new HashSet<>(Files.readAllLines(Path.of("selected-isbn.csv")));
+//        ignoredIds.remove(null);
+//        ignoredIsbns.remove(null);
+//        selectedIds.remove(null);
+//        selectedIsbns.remove(null);
     }
 
     public void loadData() {

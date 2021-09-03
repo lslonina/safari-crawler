@@ -1,4 +1,4 @@
-package org.lslonina.books.safaricrawler;
+package org.lslonina.books.safaricrawler.config;
 
 import org.lslonina.books.safaricrawler.crawler.Crawler;
 import org.lslonina.books.safaricrawler.repository.BookRepository;
@@ -10,13 +10,18 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 @SpringBootConfiguration
-public class Configuration {
+@EnableWebMvc
+public class Configuration implements WebMvcConfigurer{
     @Value("${crawler.user}")
     private String user;
 
@@ -48,7 +53,7 @@ public class Configuration {
     }
 
     private static String readCookies() throws IOException {
-        InputStream resourceAsStream = SafariCrawlerApplication.class.getResourceAsStream("/cookie.txt");
+        InputStream resourceAsStream = Configuration.class.getResourceAsStream("/cookie.txt");
         StringBuilder textBuilder = new StringBuilder();
         try (Reader reader = new BufferedReader(new InputStreamReader
                 (resourceAsStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
@@ -60,5 +65,8 @@ public class Configuration {
         return textBuilder.toString();
     }
 
-
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**");
+    }
 }

@@ -17,10 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @SpringBootApplication
@@ -35,9 +32,9 @@ public class SafariCrawlerApplication {
     @Bean
     public CommandLineRunner run(SafariBookRepository safariBookRepository, SafariBookDetailsRepository bookDetailsRepository, BookRepository bookRepository, Crawler crawler) throws Exception {
         return args -> {
-            export(bookRepository);
+//            export(bookRepository);
 //            deleteData(safariBookRepository, bookDetailsRepository, bookRepository);
-            fetchData(safariBookRepository, bookDetailsRepository, bookRepository, crawler);
+//            fetchData(safariBookRepository, bookDetailsRepository, bookRepository, crawler);
         };
     }
 
@@ -70,14 +67,14 @@ public class SafariCrawlerApplication {
         String isbn = books.stream().map(book -> book.getIsbn()).collect(Collectors.joining("\n"));
         String id = books.stream().map(book -> book.getIdentifier()).collect(Collectors.joining("\n"));
         try {
-            List<String> existing = Files.readAllLines(Path.of("goodreads.txt")).stream().filter(s -> s!= null && !s.trim().isEmpty()).collect(Collectors.toList());
+            List<String> existing = new LinkedList<>(); // Files.readAllLines(Path.of("goodreads.txt")).stream().filter(s -> s!= null && !s.trim().isEmpty()).collect(Collectors.toList());
             String newBooks = books.stream().map(book -> book.getIsbn()).filter(Objects::nonNull).filter(yy -> !existing.contains(yy.trim())).collect(Collectors.joining("\n"));
 
             Files.write(Path.of(prefix + "-isbn-" + strDate+ ".csv"), isbn.trim().getBytes());
             Files.write(Path.of(prefix + "-id-" + strDate + ".csv"), id.trim().getBytes());
             Files.write(Path.of(prefix + "-new-isbn-" + strDate+ ".csv"), newBooks.trim().getBytes());
         } catch (IOException e) {
-            throw new RuntimeException("Wasn't able to store file: " + prefix);
+            throw new RuntimeException("Wasn't able to store file: " + prefix, e);
         }
 
     }
